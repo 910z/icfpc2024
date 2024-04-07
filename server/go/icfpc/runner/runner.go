@@ -47,8 +47,8 @@ func (r Runner) Run(ctx context.Context, tasks []database.Task, algorithms []alg
 					Returning("id").
 					Ignore().
 					Scan(ctx, &runResult.ID)
-				if err == sql.ErrNoRows { // уже запущено
-					return nil
+				if err == sql.ErrNoRows { // такой прогон уже был запущен
+					continue
 				}
 				if err != nil {
 					return err
