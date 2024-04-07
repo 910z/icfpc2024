@@ -1,0 +1,7 @@
+services:
+  icfpc_test_postgres:
+    image: pgautoupgrade/pgautoupgrade:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: password

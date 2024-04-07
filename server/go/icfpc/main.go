@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"icfpc/front"
 	"icfpc/types"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -57,6 +58,9 @@ func main() {
 		return
 	}
 	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" { // в тесте
+		dsn = "postgresql://postgres:password@localhost/postgres?sslmode=disable"
+	}
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 
 	db := bun.NewDB(sqldb, pgdialect.New())
@@ -75,7 +79,7 @@ func main() {
 	}
 	err := createSchema(db)
 	for err != nil {
-		print("can't connect, retrying in 1 sec", err)
+		log.Println("can't connect, retrying in 1 sec", err)
 		time.Sleep(time.Second)
 		err = createSchema(db)
 	}
@@ -87,8 +91,9 @@ func main() {
 	serveDb(db)
 	go runAlgorithms(db)
 
-	fmt.Println("Server listening on port 8080...")
-	err = http.ListenAndServe(":8080", nil)
+	port := 8080
+	log.Printf("Server listening on port %d...\n", port)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	if err != nil {
 		panic(err)
 	}
