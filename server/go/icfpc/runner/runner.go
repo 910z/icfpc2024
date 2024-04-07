@@ -55,8 +55,6 @@ func (r Runner) Run(ctx context.Context, tasks []database.Task, algorithms []alg
 				}
 
 				go r.runWorker(ctx, task, algorithm, runResult)
-
-				return nil
 			}
 		}
 

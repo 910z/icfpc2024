@@ -21,8 +21,9 @@ type RunEvalResult struct {
 }
 
 func main() {
+	app.Route("/", &front.RunList{})
+
 	if app.IsClient {
-		app.Route("/", &front.RunList{})
 		app.RunWhenOnBrowser()
 
 		return
