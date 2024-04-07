@@ -13,12 +13,12 @@ class Solution(
     @Id
     @GeneratedValue
     @Column
-    val id: Int,
+    val id: Int? = null,
     @Column
     val problemId: Int,
     @Column
     val contentId: Int,
     @Column
     @JdbcTypeCode(SqlTypes.JSON)
-    val score: Score
+    val score: Score = mutableMapOf()
 )
