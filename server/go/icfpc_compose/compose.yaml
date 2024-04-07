@@ -1,0 +1,24 @@
+services:
+  server:
+    env_file: /opt/icfpc/env
+    restart: always
+    build:
+      context: ../icfpc
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - icfpc_postgres
+  icfpc_postgres:
+    env_file: /opt/icfpc/env
+    image: pgautoupgrade/pgautoupgrade:latest
+    volumes:
+      - /opt/icfpc/postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - default
+      - redash_default
+
+networks:
+  redash_default:
+    external: true
