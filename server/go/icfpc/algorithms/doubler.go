@@ -1,18 +1,17 @@
 package algorithms
 
 import (
-	"icfpc/types"
+	"icfpc/database"
 )
 
 type Doubler struct{}
 
-func (r *Doubler) Version() string {
+var _ IAlgorithm = Doubler{}
+
+func (d Doubler) Version() string {
 	return "1.0.0"
 }
 
-func (r *Doubler) Solve(task *types.Task) (solution *types.Solution, explanation *types.Explanation) {
-	solution = &types.Solution{Data: task.Data * 2}
-	return
+func (d Doubler) Solve(task database.Task) (Solution, Explanation, error) {
+	return Solution{Data: task.Data * 2}, nil, nil
 }
-
-var _ Algorithm = &Doubler{}

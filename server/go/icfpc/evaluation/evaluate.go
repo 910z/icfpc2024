@@ -1,11 +1,15 @@
 package evaluation
 
 import (
-	"icfpc/types"
+	"icfpc/algorithms"
+	"icfpc/database"
 )
 
 var Version = "1.0.0"
 
-func EvaluateSolution(task *types.Task, solution *types.Solution) types.EvalResult {
-	return types.EvalResult{Score: solution.Data, Explanation: "just because"}
+func EvaluateSolution(task database.Task, solution algorithms.Solution) Result {
+	return Result{
+		Score:       solution.Data,
+		Explanation: "just because",
+	}
 }

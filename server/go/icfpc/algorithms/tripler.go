@@ -1,18 +1,17 @@
 package algorithms
 
 import (
-	"icfpc/types"
+	"icfpc/database"
 )
 
 type Tripler struct{}
 
-func (r *Tripler) Version() string {
+var _ IAlgorithm = Tripler{}
+
+func (t Tripler) Version() string {
 	return "1.0.0"
 }
 
-func (r *Tripler) Solve(task *types.Task) (solution *types.Solution, explanation *types.Explanation) {
-	solution = &types.Solution{Data: task.Data * 3}
-	return
+func (t Tripler) Solve(task database.Task) (Solution, Explanation, error) {
+	return Solution{Data: task.Data * 3}, nil, nil
 }
-
-var _ Algorithm = &Tripler{}

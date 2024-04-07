@@ -2,99 +2,60 @@ package main
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
+	"icfpc/database"
+	"icfpc/evaluation"
 	"icfpc/front"
-	"icfpc/types"
-	"log"
-	"net/http"
-	"os"
-	"time"
-
+	"icfpc/runner"
+	"icfpc/server"
 	_ "net/http/pprof"
-
-	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/dialect/pgdialect"
-	"github.com/uptrace/bun/driver/pgdriver"
-	"github.com/uptrace/bun/extra/bundebug"
+	"os"
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
 
-var models = []interface{}{
-	(*types.RunResult)(nil),
-	(*types.Task)(nil),
-}
+// TODO: what is this?
+type RunEvalResult struct {
+	evaluation.Result
 
-func createSchema(db *bun.DB) error {
-	ctx := context.Background()
-
-	for _, model := range models {
-		_, err := db.NewCreateTable().IfNotExists().Model(model).Exec(ctx)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func drop(db *bun.DB) error {
-	ctx := context.Background()
-
-	for _, model := range models {
-		_, err := db.NewDropTable().Model(model).IfExists().Exec(ctx)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	RunResult database.RunResult `bun:"rel:belongs-to,join:run_result_id=id"`
 }
 
 func main() {
-
-	app.Route("/", &front.RunList{})
-	app.RunWhenOnBrowser()
 	if app.IsClient {
+		app.Route("/", &front.RunList{})
+		app.RunWhenOnBrowser()
+
 		return
 	}
-	dsn := os.Getenv("DATABASE_URL")
-	if dsn == "" { // в тесте
-		dsn = "postgresql://postgres:password@localhost/postgres?sslmode=disable"
+
+	ctx := context.Background()
+
+	connStr := os.Getenv("DATABASE_URL")
+	if connStr == "" { // в тесте
+		connStr = "postgresql://postgres:password@localhost/postgres?sslmode=disable"
 	}
-	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 
-	db := bun.NewDB(sqldb, pgdialect.New())
-	defer db.Close()
+	db, err := database.SetUp(ctx, connStr)
+	if err != nil {
+		panic(err)
+	}
 
-	db.AddQueryHook(bundebug.NewQueryHook(
-		// bundebug.WithVerbose(true),
-		bundebug.FromEnv("BUNDEBUG"),
-	))
+	defer func() {
+		_ = db.Close()
+	}()
 
-	if os.Getenv("DROP_TABLES") == "true" {
-		err := drop(db)
-		if err != nil {
+	algoRunner := runner.New(db)
+
+	go func() {
+		if err := algoRunner.Run(ctx, runner.AllTasks, runner.AllAlgorithms); err != nil {
 			panic(err)
 		}
-	}
-	err := createSchema(db)
-	for err != nil {
-		log.Println("can't connect, retrying in 1 sec", err)
-		time.Sleep(time.Second)
-		err = createSchema(db)
-	}
+	}()
 
-	http.Handle("/", &app.Handler{
-		Name:        "Hello",
-		Description: "An Hello World! example",
-	})
-	serveDb(db)
-	go runAlgorithms(db)
+	srv := server.New(db, 8080)
+	srv.SetupEndpoints()
 
-	port := 8080
-	log.Printf("Server listening on port %d...\n", port)
-	err = http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
-	if err != nil {
+	if err = srv.Run(); err != nil {
 		panic(err)
 	}
 }
