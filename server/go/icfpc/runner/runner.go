@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"icfpc/algorithms"
 	"icfpc/database"
+	"log"
 	"reflect"
 	"time"
 
@@ -62,12 +63,34 @@ func (r Runner) Run(ctx context.Context, tasks []database.Task, algorithms []alg
 	}
 }
 
+func safeSolve(
+	algorithm algorithms.IAlgorithm,
+	task database.Task,
+) (
+	solution algorithms.Solution,
+	explanation algorithms.Explanation,
+	err error,
+) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic recovered in algorithm.Solve: %v", r)
+		}
+	}()
+	solution, explanation, err = algorithm.Solve(task)
+	return solution, explanation, err
+}
+
 func (r Runner) runWorker(
 	ctx context.Context,
 	task database.Task,
 	algorithm algorithms.IAlgorithm,
 	runResult database.RunResult,
 ) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("error in runWorker %+v: %v", runResult, err)
+		}
+	}()
 	handleError := func(err error) {
 		if err != nil {
 			runResult.Status = database.RunStatusError
@@ -82,7 +105,7 @@ func (r Runner) runWorker(
 		}
 	}
 
-	solution, explanation, err := algorithm.Solve(task)
+	solution, explanation, err := safeSolve(algorithm, task)
 	if err != nil {
 		handleError(err)
 
