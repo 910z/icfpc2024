@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"icfpc/algorithms"
 	"icfpc/database"
+	"icfpc/logs"
 	"log/slog"
 	"reflect"
 	"time"
@@ -55,7 +56,8 @@ func (r Runner) Run(ctx context.Context, tasks []database.Task, algorithms []alg
 					return err
 				}
 
-				go r.runWorker(ctx, task, algorithm, runResult)
+				workerContext := logs.WithRunResultLogging(ctx, runResult)
+				go r.runWorker(workerContext, task, algorithm, runResult)
 			}
 		}
 
@@ -80,30 +82,21 @@ func safeSolve(
 	return solution, explanation, err
 }
 
-func getSlog(runResult database.RunResult) *slog.Logger {
-	return slog.With(
-		slog.String("task_id", runResult.TaskID),
-		slog.String("algorithm", runResult.AlgorithmName),
-		slog.String("version", runResult.AlgorithmVersion),
-	)
-}
-
 func (r Runner) runWorker(
 	ctx context.Context,
 	task database.Task,
 	algorithm algorithms.IAlgorithm,
 	runResult database.RunResult,
 ) {
-	logger := getSlog(runResult)
 	defer func() {
 		if err := recover(); err != nil {
-			logger.ErrorContext(ctx, "recovered panic in runWorker", slog.Any("error", err))
+			slog.ErrorContext(ctx, "recovered panic in runWorker", slog.Any("error", err))
 			panic(err)
 		} else {
-			logger.InfoContext(ctx, "finished")
+			slog.InfoContext(ctx, "finished")
 		}
 	}()
-	logger.InfoContext(ctx, "started")
+	slog.InfoContext(ctx, "started")
 
 	handleError := func(err error) {
 		runResult.Status = database.RunStatusError

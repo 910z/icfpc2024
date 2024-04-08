@@ -5,6 +5,7 @@ import (
 	"icfpc/database"
 	"icfpc/evaluation"
 	"icfpc/front"
+	"icfpc/logs"
 	"icfpc/runner"
 	"icfpc/server"
 	_ "net/http/pprof"
@@ -30,6 +31,8 @@ func main() {
 	}
 
 	ctx := context.Background()
+
+	logs.SetDefaultSlog()
 
 	connStr := os.Getenv("DATABASE_URL")
 	if connStr == "" { // в тесте
