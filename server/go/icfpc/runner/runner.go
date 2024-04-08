@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"icfpc/algorithms"
 	"icfpc/database"
-	"log"
+	"log/slog"
 	"reflect"
 	"time"
 
@@ -88,7 +88,8 @@ func (r Runner) runWorker(
 ) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Printf("error in runWorker %+v: %v", runResult, err)
+			slog.Error("recovered panic in runWorker", "error", err)
+			panic(err)
 		}
 	}()
 	handleError := func(err error) {
