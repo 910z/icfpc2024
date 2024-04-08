@@ -66,6 +66,7 @@ func (r Runner) Run(ctx context.Context, tasks []database.Task, algorithms []alg
 }
 
 func safeSolve(
+	ctx context.Context,
 	algorithm algorithms.IAlgorithm,
 	task database.Task,
 ) (
@@ -78,7 +79,7 @@ func safeSolve(
 			err = fmt.Errorf("panic recovered in algorithm.Solve: %v", r)
 		}
 	}()
-	solution, explanation, err := algorithm.Solve(task)
+	solution, explanation, err := algorithm.Solve(ctx, task)
 	return solution, explanation, err
 }
 
@@ -110,7 +111,7 @@ func (r Runner) runWorker(
 		}
 	}
 
-	solution, explanation, err := safeSolve(algorithm, task)
+	solution, explanation, err := safeSolve(ctx, algorithm, task)
 	if err != nil {
 		handleError(err)
 
