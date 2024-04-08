@@ -97,7 +97,7 @@ func (r Runner) runWorker(
 	logger := getSlog(runResult)
 	defer func() {
 		if err := recover(); err != nil {
-			logger.ErrorContext(ctx, "recovered panic in runWorker", "error", err)
+			logger.ErrorContext(ctx, "recovered panic in runWorker", slog.Any("error", err))
 			panic(err)
 		} else {
 			logger.InfoContext(ctx, "finished")
