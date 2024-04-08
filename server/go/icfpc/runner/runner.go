@@ -80,29 +80,40 @@ func safeSolve(
 	return solution, explanation, err
 }
 
+func getSlog(runResult database.RunResult) *slog.Logger {
+	return slog.With(
+		slog.String("task_id", runResult.TaskID),
+		slog.String("algorithm", runResult.AlgorithmName),
+		slog.String("version", runResult.AlgorithmVersion),
+	)
+}
+
 func (r Runner) runWorker(
 	ctx context.Context,
 	task database.Task,
 	algorithm algorithms.IAlgorithm,
 	runResult database.RunResult,
 ) {
+	logger := getSlog(runResult)
 	defer func() {
 		if err := recover(); err != nil {
-			slog.Error("recovered panic in runWorker", "error", err)
+			logger.ErrorContext(ctx, "recovered panic in runWorker", "error", err)
 			panic(err)
+		} else {
+			logger.InfoContext(ctx, "finished")
 		}
 	}()
-	handleError := func(err error) {
-		if err != nil {
-			runResult.Status = database.RunStatusError
-			runResult.FinishedAt = time.Now().UTC()
-			runResult.Explanation = &explanationWithError{
-				Error: err.Error(),
-			}
+	logger.InfoContext(ctx, "started")
 
-			if _, err = r.db.NewUpdate().Model(&runResult).WherePK().Exec(ctx); err != nil {
-				panic(err)
-			}
+	handleError := func(err error) {
+		runResult.Status = database.RunStatusError
+		runResult.FinishedAt = time.Now().UTC()
+		runResult.Explanation = &explanationWithError{
+			Error: err.Error(),
+		}
+
+		if _, err = r.db.NewUpdate().Model(&runResult).WherePK().Exec(ctx); err != nil {
+			panic(err)
 		}
 	}
 
