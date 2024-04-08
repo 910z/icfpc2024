@@ -1,6 +1,7 @@
 package algorithms
 
 import (
+	"context"
 	"icfpc/database"
 )
 
@@ -14,5 +15,5 @@ type (
 
 type IAlgorithm interface {
 	Version() string
-	Solve(database.Task) (Solution, Explanation, error)
+	Solve(context.Context, database.Task) (Solution, Explanation, error)
 }

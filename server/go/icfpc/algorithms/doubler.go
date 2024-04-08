@@ -1,6 +1,7 @@
 package algorithms
 
 import (
+	"context"
 	"icfpc/database"
 )
 
@@ -12,6 +13,6 @@ func (d Doubler) Version() string {
 	return "1.0.0"
 }
 
-func (d Doubler) Solve(task database.Task) (Solution, Explanation, error) {
+func (d Doubler) Solve(_ context.Context, task database.Task) (Solution, Explanation, error) {
 	return Solution{Data: task.Data * 2}, nil, nil
 }
