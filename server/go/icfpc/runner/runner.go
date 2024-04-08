@@ -67,8 +67,8 @@ func safeSolve(
 	algorithm algorithms.IAlgorithm,
 	task database.Task,
 ) (
-	solution algorithms.Solution,
-	explanation algorithms.Explanation,
+	_ algorithms.Solution,
+	_ algorithms.Explanation,
 	err error,
 ) {
 	defer func() {
@@ -76,7 +76,7 @@ func safeSolve(
 			err = fmt.Errorf("panic recovered in algorithm.Solve: %v", r)
 		}
 	}()
-	solution, explanation, err = algorithm.Solve(task)
+	solution, explanation, err := algorithm.Solve(task)
 	return solution, explanation, err
 }
 
