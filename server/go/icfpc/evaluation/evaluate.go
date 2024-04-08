@@ -7,8 +7,8 @@ import (
 
 var Version = "1.0.0"
 
-func EvaluateSolution(task database.Task, solution algorithms.Solution) Result {
-	return Result{
+func EvaluateSolution(task database.Task, solution algorithms.Solution) database.EvalResult {
+	return database.EvalResult{
 		Score:       solution.Data,
 		Explanation: "just because",
 	}

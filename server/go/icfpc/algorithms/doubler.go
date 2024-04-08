@@ -13,6 +13,6 @@ func (d Doubler) Version() string {
 	return "1.0.0"
 }
 
-func (d Doubler) Solve(_ context.Context, task database.Task) (Solution, Explanation, error) {
-	return Solution{Data: task.Data * 2}, nil, nil
+func (d Doubler) Solve(_ context.Context, task database.Task) (database.Solution, database.SolutionExplanation, error) {
+	return database.Solution{Data: task.Data * 2}, nil, nil
 }

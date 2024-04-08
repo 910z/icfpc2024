@@ -1,7 +1,6 @@
 package front
 
 import (
-	"icfpc/algorithms"
 	"icfpc/database"
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
@@ -11,7 +10,7 @@ type Visualization struct {
 	app.Compo
 
 	task     database.Task
-	solution algorithms.Solution
+	solution database.Solution
 }
 
 func (v *Visualization) OnMount(ctx app.Context) {

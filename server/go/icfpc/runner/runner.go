@@ -61,8 +61,8 @@ func safeSolve(
 	algorithm algorithms.IAlgorithm,
 	task database.Task,
 ) (
-	_ algorithms.Solution,
-	_ algorithms.Explanation,
+	_ database.Solution,
+	_ database.SolutionExplanation,
 	err error,
 ) {
 	defer func() {

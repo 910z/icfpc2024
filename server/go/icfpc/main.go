@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"icfpc/database"
-	"icfpc/evaluation"
 	"icfpc/front"
 	"icfpc/logs"
 	"icfpc/runner"
@@ -13,13 +12,6 @@ import (
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
-
-// TODO: what is this?
-type RunEvalResult struct {
-	evaluation.Result
-
-	RunResult database.RunResult `bun:"rel:belongs-to,join:run_result_id=id"`
-}
 
 func main() {
 	app.Route("/", &front.RunList{})
