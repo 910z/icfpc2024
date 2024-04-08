@@ -28,7 +28,7 @@ type (
 	}
 
 	Task struct {
-		ID          string
+		ID          string `bun:"id,pk"`
 		Description string
 		Data        int
 	}
@@ -40,7 +40,8 @@ type (
 
 	RunEvalResult struct {
 		EvalResult
-		RunResult RunResult `bun:"rel:belongs-to,join:run_result_id=id"`
+		RunResultID int64
+		RunResult   RunResult `bun:"rel:belongs-to,join:run_result_id=id"`
 	}
 )
 
@@ -51,6 +52,7 @@ const (
 )
 
 var allModels = []any{
-	(*RunResult)(nil),
 	(*Task)(nil),
+	(*RunResult)(nil),
+	(*RunEvalResult)(nil),
 }

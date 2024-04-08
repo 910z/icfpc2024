@@ -43,7 +43,7 @@ func main() {
 	algoRunner := runner.New(db)
 
 	go func() {
-		if err := algoRunner.Run(ctx, runner.AllTasks, runner.AllAlgorithms); err != nil {
+		if err := algoRunner.RunAlgorithms(ctx, runner.AllAlgorithms); err != nil {
 			panic(err)
 		}
 	}()

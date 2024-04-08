@@ -24,9 +24,81 @@ type Runner struct {
 	db *bun.DB
 }
 
-func (r Runner) Run(ctx context.Context, tasks []database.Task, algorithms []algorithms.IAlgorithm) error {
+type plannedRun struct {
+	task      *database.Task
+	algorithm algorithms.IAlgorithm
+}
+
+/*
+SELECT run_results.*
+FROM run_results
+RIGHT JOIN (
+    SELECT *
+    FROM tasks
+    CROSS JOIN (
+        VALUES
+        ('*algorithms.Tripler', '1.0.0'),
+        ('*algorithms.Tripler', '1.0.0')
+    ) AS algorithms(algorithm_name, algorithm_version)
+) AS ttt_algorithms ON
+    run_results.algorithm_name = ttt_algorithms.algorithm_name
+    AND run_results.algorithm_version = ttt_algorithms.algorithm_version
+    AND run_results.task_id = ttt_algorithms.id
+WHERE ttt_algorithms.algorithm_name IS NULL
+    AND ttt_algorithms.algorithm_version IS NULL
+    AND ttt_algorithms.id IS NULL;
+*/
+
+type algorithmData struct {
+	Name    string
+	Version string
+}
+
+func toAlgorithmDatas(algs []algorithms.IAlgorithm) []algorithmData {
+	var result []algorithmData
+	for _, algorithm := range algs {
+		result = append(result, algorithmData{
+			Name:    algorithms.GetName(algorithm),
+			Version: algorithm.Version(),
+		})
+	}
+	return result
+}
+
+func (r Runner) planRuns(
+	ctx context.Context,
+	currentAlgorithms []algorithms.IAlgorithm,
+) ([]database.RunResult, error) {
+	algDatas := toAlgorithmDatas(currentAlgorithms)
+	algValues := r.db.NewValues(&algDatas)
+	var runResults []database.RunResult
+	err := r.db.NewSelect().
+		With("algorithms", algValues).
+		Model(&runResults).
+		Join(`FULL OUTER JOIN (select * from tasks CROSS JOIN algorithms) as task_algo
+			ON 
+				task_algo.name = run_result.algorithm_name 
+				AND task_algo.version = run_result.algorithm_version
+				AND task_algo.id = run_result.task_id`).
+		Where("run_result.id IS NULL").
+		Column("task_id", "algorithm_name").
+		Scan(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+	return runResults, nil
+}
+
+func (r Runner) RunAlgorithms(ctx context.Context, algorithms []algorithms.IAlgorithm) error {
 	for {
-		for _, task := range tasks {
+		runs, err := r.planRuns(ctx, algorithms)
+		if err != nil {
+			return err
+		}
+		slog.InfoContext(ctx, "runs planned", slog.Any("runs", runs))
+
+		for _, task := range AllTasks {
 			for _, algorithm := range algorithms {
 				runResult := database.RunResult{
 					TaskID:           task.ID,
