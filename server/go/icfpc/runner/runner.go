@@ -21,16 +21,7 @@ func New(db *bun.DB) *Runner {
 }
 
 type Runner struct {
-	db         *bun.DB
-	tasks      []database.Task
-	algorithms []algorithms.IAlgorithm
-}
-
-// TODO: this is bad
-type explanationWithError struct {
-	algorithms.Explanation
-
-	Error string
+	db *bun.DB
 }
 
 func (r Runner) Run(ctx context.Context, tasks []database.Task, algorithms []algorithms.IAlgorithm) error {
@@ -102,9 +93,7 @@ func (r Runner) runWorker(
 	handleError := func(err error) {
 		runResult.Status = database.RunStatusError
 		runResult.FinishedAt = time.Now().UTC()
-		runResult.Explanation = &explanationWithError{
-			Error: err.Error(),
-		}
+		runResult.Error = err.Error()
 
 		if _, err = r.db.NewUpdate().Model(&runResult).WherePK().Exec(ctx); err != nil {
 			panic(err)

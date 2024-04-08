@@ -13,7 +13,8 @@ type (
 		AlgorithmName    string `bun:"unique:task_algorithm"`
 		AlgorithmVersion string `bun:"unique:task_algorithm"`
 		Explanation      any    `bun:"type:jsonb"`
-		Solution         any    `bun:"type:jsonb"`
+		Error            string
+		Solution         any `bun:"type:jsonb"`
 		Status           RunStatus
 		StartedAt        time.Time
 		FinishedAt       time.Time
