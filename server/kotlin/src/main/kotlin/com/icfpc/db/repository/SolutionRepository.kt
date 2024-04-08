@@ -6,8 +6,6 @@ import org.springframework.data.jpa.repository.Query
 import java.lang.annotation.Native
 
 interface SolutionRepository : JpaRepository<Solution, Int> {
-//    @
-//    fun notCalculated(): List<Solution>
-    @Query("select * from solution where score -> ?1 is null order by id desc limit ?2", nativeQuery = true)
+    @Query("select * from solution where scores -> ?1 is null order by id desc limit ?2", nativeQuery = true)
     fun notCalculated(version: String, limit: Int): List<Solution>
 }

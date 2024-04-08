@@ -19,6 +19,8 @@ class Solution(
     @Column
     val contentId: Int,
     @Column
+    var score: BigInteger? = null,
+    @Column
     @JdbcTypeCode(SqlTypes.JSON)
-    val score: Score = mutableMapOf()
+    val scores: Score = mutableMapOf()
 )

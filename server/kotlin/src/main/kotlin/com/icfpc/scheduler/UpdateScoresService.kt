@@ -44,7 +44,9 @@ class UpdateScoresService(
             val problem = problemRepository.getReferenceById(solution.problemId)
             val task = contentRepository.getReferenceById(problem.contentId).let { Json.parse<Task>(it.content) }
             val solve = contentRepository.getReferenceById(solution.contentId).let { Json.parse<Solve>(it.content) }
-            solution.score[version] = calcMetric.calc(task, solve).toBigInteger()
+            val score = calcMetric.calc(task, solve).toBigInteger()
+            solution.score = score
+            solution.scores[version] = score
             solutionRepository.save(solution)
             println("calc ${solution.id}[${problem.id}] at ${Date().time - begin.time}ms")
         }
