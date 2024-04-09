@@ -30,7 +30,6 @@ func SetUp(ctx context.Context, connStr string) (*bun.DB, error) {
 	db := bun.NewDB(sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(connStr))), pgdialect.New())
 
 	db.AddQueryHook(bundebug.NewQueryHook(
-		// bundebug.WithVerbose(true),
 		bundebug.FromEnv("BUNDEBUG"),
 	))
 

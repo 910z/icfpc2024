@@ -4,6 +4,7 @@ import (
 	"context"
 	"icfpc/database"
 	"icfpc/front"
+	"icfpc/integration"
 	"icfpc/logs"
 	"icfpc/runner"
 	"icfpc/server"
@@ -47,6 +48,8 @@ func main() {
 			panic(err)
 		}
 	}()
+
+	go runner.RunTasksFetcher(ctx, integration.GetTasks, db)
 
 	srv := server.New(db, 8080)
 	srv.SetupEndpoints()

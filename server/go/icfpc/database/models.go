@@ -6,7 +6,7 @@ import (
 
 type (
 	Solution struct {
-		Data int
+		Data int64
 	}
 
 	SolutionExplanation any
@@ -16,7 +16,7 @@ type (
 
 	RunResult struct {
 		ID               int64               `bun:"id,pk,autoincrement"`
-		TaskID           string              `bun:"unique:task_algorithm"`
+		TaskID           int64               `bun:"unique:task_algorithm"`
 		AlgorithmName    string              `bun:"unique:task_algorithm"`
 		AlgorithmVersion string              `bun:"unique:task_algorithm"`
 		Explanation      SolutionExplanation `bun:"type:jsonb"`
@@ -27,14 +27,16 @@ type (
 		Error            string
 	}
 
+	TaskData = int64
+
 	Task struct {
-		ID          string `bun:"id,pk"`
-		Description string
-		Data        int
+		ID         int64    `bun:"id,pk,autoincrement"`  // суррогатный айдишник
+		ExternalID string   `bun:"unique:external_data"` // то, как она называется на сервере ICFPC
+		Data       TaskData `bun:"unique:external_data"`
 	}
 
 	EvalResult struct {
-		Score       int
+		Score       int64
 		Explanation EvalExplanation `bun:"type:jsonb"`
 	}
 

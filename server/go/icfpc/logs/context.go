@@ -23,7 +23,7 @@ func (h *contextHandler) Handle(ctx context.Context, r slog.Record) error {
 
 	if runResult != nil {
 		runResult := runResult.(database.RunResult)
-		r.AddAttrs(slog.String("task_id", runResult.TaskID))
+		r.AddAttrs(slog.Int64("task_id", runResult.TaskID))
 		r.AddAttrs(slog.String("algorithm_name", runResult.AlgorithmName))
 		r.AddAttrs(slog.String("algorithm_version", runResult.AlgorithmVersion))
 	}
