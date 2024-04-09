@@ -49,7 +49,11 @@ func main() {
 		}
 	}()
 
-	go runner.RunTasksFetcher(ctx, integration.GetTasks, db)
+	go func() {
+		if err := runner.RunTasksFetcher(ctx, integration.GetTasks, db); err != nil {
+			panic(err)
+		}
+	}()
 
 	srv := server.New(db, 8080)
 	srv.SetupEndpoints()
