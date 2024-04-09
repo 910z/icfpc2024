@@ -1,4 +1,4 @@
-package runner
+package workers
 
 import (
 	"icfpc/algorithms"

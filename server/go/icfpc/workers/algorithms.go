@@ -1,4 +1,4 @@
-package runner
+package workers
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/uptrace/bun"
 )
 
-func New(db *bun.DB) *Runner {
+func NewAlgorithmRunner(db *bun.DB) *Runner {
 	return &Runner{
 		db: db,
 	}
@@ -21,11 +21,6 @@ func New(db *bun.DB) *Runner {
 
 type Runner struct {
 	db *bun.DB
-}
-
-type plannedRun struct {
-	task      *database.Task
-	algorithm algorithms.IAlgorithm
 }
 
 type algorithmData struct {
@@ -102,7 +97,7 @@ func getAlgorithm(algs []algorithms.IAlgorithm, name string, version string) alg
 	return nil
 }
 
-func (r Runner) RunAlgorithms(ctx context.Context, algs []algorithms.IAlgorithm) error {
+func (r Runner) Run(ctx context.Context, algs []algorithms.IAlgorithm) error {
 	taskCache := make(map[int64]database.Task)
 
 	for {

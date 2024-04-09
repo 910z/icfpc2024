@@ -6,8 +6,8 @@ import (
 	"icfpc/front"
 	"icfpc/integration"
 	"icfpc/logs"
-	"icfpc/runner"
 	"icfpc/server"
+	"icfpc/workers"
 	_ "net/http/pprof"
 	"os"
 
@@ -41,16 +41,18 @@ func main() {
 		_ = db.Close()
 	}()
 
-	algoRunner := runner.New(db)
+	algoRunner := workers.NewAlgorithmRunner(db)
+
+	taskFetcher := workers.NewTasksFetcher(db)
 
 	go func() {
-		if err := algoRunner.RunAlgorithms(ctx, runner.AllAlgorithms); err != nil {
+		if err := algoRunner.Run(ctx, workers.AllAlgorithms); err != nil {
 			panic(err)
 		}
 	}()
 
 	go func() {
-		if err := runner.RunTasksFetcher(ctx, integration.GetTasks, db); err != nil {
+		if err := taskFetcher.Run(ctx, integration.GetTasks); err != nil {
 			panic(err)
 		}
 	}()

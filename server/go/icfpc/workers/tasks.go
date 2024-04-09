@@ -1,4 +1,4 @@
-package runner
+package workers
 
 import (
 	"context"
@@ -12,14 +12,21 @@ import (
 	"github.com/uptrace/bun"
 )
 
-func isRetriable(err error) bool {
+type TasksFetcher struct {
+	db *bun.DB
+}
+
+func NewTasksFetcher(db *bun.DB) *TasksFetcher {
+	return &TasksFetcher{db: db}
+}
+
+func (t *TasksFetcher) isRetriable(err error) bool {
 	return errors.Is(err, integration.Error{})
 }
 
-func RunTasksFetcher(
+func (t *TasksFetcher) Run(
 	ctx context.Context,
 	getTasks func() ([]database.Task, error),
-	db *bun.DB,
 ) error {
 	handleTasks := func() error {
 		tasks, err := getTasks()
@@ -28,7 +35,7 @@ func RunTasksFetcher(
 			return err // тут не валимся, потому что ошибку от апи icfpc ретраим
 		}
 
-		err = saveTasks(ctx, db, tasks)
+		err = t.saveTasks(ctx, tasks)
 		if err != nil {
 			slog.ErrorContext(ctx, "failed to save tasks", slog.Any("error", err))
 			return err
@@ -37,7 +44,7 @@ func RunTasksFetcher(
 	}
 
 	err := handleTasks()
-	if err != nil && !isRetriable(err) {
+	if err != nil && !t.isRetriable(err) {
 		return err
 	}
 
@@ -50,15 +57,15 @@ func RunTasksFetcher(
 			return nil
 		case <-ticker.C:
 			err := handleTasks()
-			if err != nil && !isRetriable(err) {
+			if err != nil && !t.isRetriable(err) {
 				return err
 			}
 		}
 	}
 }
 
-func saveTasks(ctx context.Context, db *bun.DB, tasks []database.Task) error {
-	res, err := db.NewInsert().
+func (t *TasksFetcher) saveTasks(ctx context.Context, tasks []database.Task) error {
+	res, err := t.db.NewInsert().
 		Model(&tasks).
 		On("CONFLICT DO NOTHING"). // когда совпали контент и айдишник. если контент поменялся, добавит дубль
 		Exec(ctx)
