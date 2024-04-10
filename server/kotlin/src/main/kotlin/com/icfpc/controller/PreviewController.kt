@@ -5,6 +5,7 @@ import com.icfpc.db.repository.ProblemRepository
 import com.icfpc.db.repository.SolutionRepository
 import com.icfpc.problem.model.Point
 import com.icfpc.problem.model.getContent
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -31,8 +32,10 @@ class PreviewController (
     fun getImage(
         @PathVariable id: Int,
         imgSize: Int?,
-        size: Int = 0
+        size: Int = 0,
+        response: HttpServletResponse
     ): ResponseEntity<ByteArray> {
+        response.setHeader("Cache-Control", "max-age=3600")
         val solution = solutionRepository.getReferenceById(id)
         val problem = problemRepository.getReferenceById(solution.problemId)
         val task = problem.getContent(contentRepository)

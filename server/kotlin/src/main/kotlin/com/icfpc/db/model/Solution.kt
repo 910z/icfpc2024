@@ -1,9 +1,5 @@
 package com.icfpc.db.model
 
-import com.icfpc.db.repository.ContentRepository
-import com.icfpc.problem.model.Solve
-import com.icfpc.problem.model.Task
-import com.icfpc.utils.Json
 import jakarta.persistence.*
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
@@ -22,8 +18,11 @@ class Solution(
     val problemId: Int,
     @Column
     val contentId: Int,
+//    @Column
+//    val tag: String,
     @Column
-    val tag: String,
+    @ElementCollection
+    var tags: List<String> = listOf(),
     @Column
     var score: BigInteger? = null,
     @Column
