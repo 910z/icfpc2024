@@ -65,7 +65,7 @@ class ApiController(
 
     @GetMapping("/solutions")
     @ResponseBody
-    fun solutions() = solutionRepository.findAll().sortedByDescending { it.id }
+    fun solutions(limit: Int = 50) = solutionRepository.findAll().sortedByDescending { it.id }.take(limit)
 
     @GetMapping("/solution/{id}")
     @ResponseBody
@@ -74,9 +74,9 @@ class ApiController(
 
     @PostMapping("/solution/{id}")
     @ResponseBody
-    fun upload(@PathVariable id: Int, @RequestBody body: Solve, @RequestParam("tag") tag: String): Solution {
+    fun upload(@PathVariable id: Int, @RequestBody body: Solve, @RequestParam("tags") tags: List<String>): Solution {
         val content = contentRepository.save(Content(content = Json.toObject(body)))
-        return solutionRepository.save(Solution(problemId = id, contentId = content.id!!, tag = tag))
+        return solutionRepository.save(Solution(problemId = id, contentId = content.id!!, tags = tags))
     }
 
     @GetMapping("/test")

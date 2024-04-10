@@ -5,8 +5,9 @@ export type Problem = {
 
 export type Solution = {
   id: number
+  problemId: number
   score: number
-  tag: string
+  tags: string[]
 }
 
 // export type Problem = {

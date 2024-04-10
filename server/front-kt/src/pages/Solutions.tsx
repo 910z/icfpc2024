@@ -1,23 +1,23 @@
 import React, {useState} from 'react';
 import {Table} from "react-bootstrap";
-import {Problem} from "../types";
+import {Solution} from "../types";
 
 function get(url: string) {
     console.log(`get from ${url}`);
     return fetch(url).then((res) => res.json());
 }
 
-export const Problems: React.FC = () => {
-    const [problems, setProblems] = useState([] as Problem[]);
+export const Solutions: React.FC = () => {
+    const [solutions, setSolutions] = useState([] as Solution[]);
 
     // const [bestSolutions, setBestSolutions]= useState({});
 
     function upd() {
         console.log("upd")
-        get("http://localhost:8080/api/problems")
+        get("http://localhost:8080/api/solutions")
             .then(data => {
-                if (data != problems) {
-                    setProblems(data);
+                if (data != solutions) {
+                    setSolutions(data);
                 }
             });
         // get("http://localhost:8080/api/solution/best")
@@ -75,17 +75,12 @@ export const Problems: React.FC = () => {
         </tr>
         </thead>
         <tbody>
-        {problems?.map(({id, bestSolution}) => (
+        {solutions?.map(({id, problemId, score, tags}) => (
             <tr>
-                <td>{id}</td>
-                <td>{
-                    bestSolution != null
-                        ? <img src={`http://localhost:8080/preview/${bestSolution.id}?imgSize=200`}/>
-                        : <p>Nope</p>
-                }</td>
-                {/*<td>{contentId}</td>*/}
-                <td>{bestSolution?.score ?? 0}</td>
-                <td>{bestSolution?.tags ?? []}</td>
+                <td>{problemId}</td>
+                <td><img src={`http://localhost:8080/preview/${id}?imgSize=200`}/></td>
+                <td>{score ?? 0}</td>
+                <td>{tags ?? []}</td>
             </tr>
         ))}
         </tbody>

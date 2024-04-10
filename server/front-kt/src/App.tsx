@@ -3,12 +3,11 @@ import React, {useState} from 'react';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
-
-import ButtonsShowcase from './showcases/Buttons';
 import {Nav, Navbar, NavDropdown} from "react-bootstrap";
 import ThemeSwitch from "./components/ThemeSwitch";
 import {HashRouter, Route, Routes} from "react-router-dom";
 import {Problems} from "./pages/Problems";
+import {Solutions} from "./pages/Solutions";
 
 function AlertDismissibleExample() {
     const [show, setShow] = useState(false);
@@ -90,7 +89,7 @@ const App = () => (
 
                 <Routes>
                     <Route path="/problems" element={<Problems/>}/>
-                    <Route path="/solutions" element={<ButtonsShowcase/>}/>
+                    <Route path="/solutions" element={<Solutions/>}/>
                 </Routes>
             </Container>
         </div>
