@@ -5,11 +5,10 @@ import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
 
 import ButtonsShowcase from './showcases/Buttons';
-import ToastsShowcase from './showcases/Toasts';
 import {Nav, Navbar, NavDropdown} from "react-bootstrap";
 import ThemeSwitch from "./components/ThemeSwitch";
 import {HashRouter, Route, Routes} from "react-router-dom";
-import Problems from "./pages/Problems";
+import {Problems} from "./pages/Problems";
 
 function AlertDismissibleExample() {
     const [show, setShow] = useState(false);
@@ -84,10 +83,10 @@ const App = () => (
                 {/*        Welcome To React-Bootstrap TypeScript Example*/}
                 {/*    </h1>*/}
                 {/*</Container>*/}
-                <h2>Buttons</h2>
-                <ButtonsShowcase/>
-                <h2>Toasts</h2>
-                <ToastsShowcase/>
+                {/*<h2>Buttons</h2>*/}
+                {/*<ButtonsShowcase/>*/}
+                {/*<h2>Toasts</h2>*/}
+                {/*<ToastsShowcase/>*/}
 
                 <Routes>
                     <Route path="/problems" element={<Problems/>}/>
