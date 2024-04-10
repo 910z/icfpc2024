@@ -19,6 +19,8 @@ class Solution(
     @Column
     val contentId: Int,
     @Column
+    val tag: String,
+    @Column
     var score: BigInteger? = null,
     @Column
     @JdbcTypeCode(SqlTypes.JSON)
