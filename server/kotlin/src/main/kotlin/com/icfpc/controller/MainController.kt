@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping
 class MainController {
     @GetMapping("/")
     fun index(): String {
-        return "index"
+        return "redirect:index.html"
     }
 }
