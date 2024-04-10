@@ -1,5 +1,9 @@
 package com.icfpc.db.model
 
+import com.icfpc.db.repository.ContentRepository
+import com.icfpc.problem.model.Solve
+import com.icfpc.problem.model.Task
+import com.icfpc.utils.Json
 import jakarta.persistence.*
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes

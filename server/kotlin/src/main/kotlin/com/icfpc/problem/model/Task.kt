@@ -3,6 +3,9 @@ package com.icfpc.problem.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.icfpc.db.model.Problem
+import com.icfpc.db.repository.ContentRepository
+import com.icfpc.utils.Json
 
 data class Task(
     @JsonProperty("room_width")
@@ -44,3 +47,6 @@ data class Pillars(
     @JsonProperty("radius")
     val radius: Double
 )
+
+fun Problem.getContent(contentRepository: ContentRepository) =
+    contentRepository.getReferenceById(contentId).let { Json.parse<Task>(it.content) }

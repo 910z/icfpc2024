@@ -1,5 +1,8 @@
 package com.icfpc.db.model
 
+import com.icfpc.db.repository.ContentRepository
+import com.icfpc.problem.model.Task
+import com.icfpc.utils.Json
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -15,3 +18,4 @@ class Problem(
     @Column
     val contentId: Int
 )
+
