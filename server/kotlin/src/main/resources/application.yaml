@@ -3,7 +3,7 @@ spring:
     name: icfpc
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: 'jdbc:postgresql://localhost:5050/icfpc'
+    url: 'jdbc:postgresql://${DATABASE:localhost:5050}/icfpc'
     username: 'icfpc'
     password: 'icfpc'
     hikari:
@@ -14,3 +14,5 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+server:
+  port: 5000

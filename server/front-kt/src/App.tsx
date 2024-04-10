@@ -8,7 +8,7 @@ import ButtonsShowcase from './showcases/Buttons';
 import ToastsShowcase from './showcases/Toasts';
 import {Nav, Navbar, NavDropdown} from "react-bootstrap";
 import ThemeSwitch from "./components/ThemeSwitch";
-import {BrowserRouter, Link, NavLink, Route, Routes} from "react-router-dom";
+import {HashRouter, Route, Routes} from "react-router-dom";
 import Problems from "./pages/Problems";
 
 function AlertDismissibleExample() {
@@ -39,9 +39,7 @@ function AlertDismissibleExample() {
 }
 
 const App = () => (
-    <BrowserRouter>
-
-
+    <HashRouter>
         <div>
             <Navbar expand="lg" className="bg-body-tertiary">
                 <Container>
@@ -49,8 +47,8 @@ const App = () => (
                     <Navbar.Toggle aria-controls="basic-navbar-nav"/>
                     <Navbar.Collapse id="basic-navbar-nav">
                         <Nav className="me-auto">
-                            <Nav.Link href={`problems`}>Problems</Nav.Link>
-                            <Nav.Link href={`solutions`}>Solutions</Nav.Link>
+                            <Nav.Link href={`#/problems`}>Problems</Nav.Link>
+                            <Nav.Link href={`#/solutions`}>Solutions</Nav.Link>
                             <NavDropdown title="Dropdown" id="basic-nav-dropdown">
                                 <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
                                 <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
@@ -92,12 +90,12 @@ const App = () => (
                 <ToastsShowcase/>
 
                 <Routes>
-                    <Route path="problems" element={<Problems/>}/>
-                    <Route path="solutions" element={<ButtonsShowcase/>}/>
+                    <Route path="/problems" element={<Problems/>}/>
+                    <Route path="/solutions" element={<ButtonsShowcase/>}/>
                 </Routes>
             </Container>
         </div>
-    </BrowserRouter>
+    </HashRouter>
 );
 
 export default App;
