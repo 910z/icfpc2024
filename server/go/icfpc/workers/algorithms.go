@@ -77,7 +77,7 @@ func getTasksToAdd(taskCache map[int64]database.Task, plannedRuns []database.Run
 
 // может, брать его сразу из памяти, когда из апишки icfpc читаем
 func addToTaskCache(ctx context.Context, db *bun.DB, taskIds []int64, taskCache map[int64]database.Task) error {
-	tasks := make([]database.Task, 0, len(taskIds))
+	var tasks []database.Task
 	err := db.NewSelect().Model(&tasks).Where("id IN (?)", bun.In(taskIds)).Scan(ctx)
 	if err != nil {
 		return err
@@ -119,7 +119,7 @@ func (r Runner) Run(ctx context.Context, algs []algorithms.IAlgorithm) error {
 				TaskID:           task.ID,
 				AlgorithmName:    algorithms.GetName(algorithm),
 				AlgorithmVersion: algorithm.Version(),
-				Status:           database.RunStatusStarted,
+				Status:           database.ProgressStatusStarted,
 				StartedAt:        time.Now().UTC(),
 			}
 
@@ -176,12 +176,13 @@ func (r Runner) runWorker(
 	}()
 	slog.InfoContext(ctx, "started")
 
+	updateQuery := r.db.NewUpdate().Model(&runResult).WherePK()
 	handleError := func(err error) {
-		runResult.Status = database.RunStatusError
+		runResult.Status = database.ProgressStatusError
 		runResult.FinishedAt = time.Now().UTC()
 		runResult.Error = err.Error()
 
-		if _, err = r.db.NewUpdate().Model(&runResult).WherePK().Exec(ctx); err != nil {
+		if err := database.UpdateEnsured(ctx, updateQuery); err != nil {
 			panic(err)
 		}
 	}
@@ -196,25 +197,9 @@ func (r Runner) runWorker(
 	runResult.FinishedAt = time.Now().UTC()
 	runResult.Solution = solution
 	runResult.Explanation = explanation
-	runResult.Status = database.RunStatusFinished
+	runResult.Status = database.ProgressStatusFinished
 
-	res, err := r.db.NewUpdate().Model(&runResult).WherePK().Exec(ctx)
-	if err != nil {
+	if err := database.UpdateEnsured(ctx, updateQuery); err != nil {
 		handleError(err)
-
-		return
-	}
-
-	rows, err := res.RowsAffected()
-	if err != nil {
-		handleError(err)
-
-		return
-	}
-
-	if rows == 0 {
-		handleError(fmt.Errorf("no rows updated: %v", runResult))
-
-		return
 	}
 }

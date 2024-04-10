@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -66,4 +67,24 @@ func dropTables(ctx context.Context, db *bun.DB) error {
 	}
 
 	return nil
+}
+
+func ensureRows(res sql.Result) error {
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return fmt.Errorf("no rows affected")
+	}
+	return nil
+}
+
+func UpdateEnsured(ctx context.Context, q *bun.UpdateQuery) error {
+	res, err := q.Exec(ctx)
+	if err != nil {
+		return err
+	}
+
+	return ensureRows(res)
 }

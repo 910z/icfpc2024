@@ -3,6 +3,7 @@ package front
 import (
 	"encoding/json"
 	"fmt"
+	"icfpc/database"
 	"net/http"
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
@@ -11,7 +12,7 @@ import (
 type RunList struct {
 	app.Compo
 
-	runItems []runListItem
+	runItems []database.RunEvalResult
 }
 
 func (l *RunList) OnMount(_ app.Context) {
@@ -47,8 +48,8 @@ func (l *RunList) items() app.UI {
 		item := l.runItems[i]
 
 		return app.Tr().Body(
-			app.Td().Text(item.TaskID),
-			app.Td().Text(fmt.Sprintf("%s %s", item.AlgorithmName, item.AlgorithmVersion)),
+			app.Td().Text(item.RunResult.Task.ExternalID),
+			app.Td().Text(fmt.Sprintf("%s %s", item.RunResult.AlgorithmName, item.RunResult.AlgorithmVersion)),
 			app.Td().Text(fmt.Sprint(item.Score)),
 		)
 	})

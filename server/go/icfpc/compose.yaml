@@ -5,3 +5,10 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: password
+    networks:
+      - default
+      - redash_default
+
+networks:
+  redash_default:
+    external: true

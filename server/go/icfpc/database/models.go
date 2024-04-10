@@ -12,16 +12,17 @@ type (
 	SolutionExplanation any
 	EvalExplanation     any
 
-	RunStatus string
+	ProgressStatus string
 
 	RunResult struct {
 		ID               int64               `bun:"id,pk,autoincrement"`
 		TaskID           int64               `bun:"unique:task_algorithm"`
+		Task             Task                `bun:"rel:has-one,join:task_id=id"`
 		AlgorithmName    string              `bun:"unique:task_algorithm"`
 		AlgorithmVersion string              `bun:"unique:task_algorithm"`
 		Explanation      SolutionExplanation `bun:"type:jsonb"`
 		Solution         Solution            `bun:"type:jsonb"`
-		Status           RunStatus
+		Status           ProgressStatus
 		StartedAt        time.Time
 		FinishedAt       time.Time
 		Error            string
@@ -42,15 +43,21 @@ type (
 
 	RunEvalResult struct {
 		EvalResult
-		RunResultID int64
+		ID          int64 `bun:"id,pk,autoincrement"` // суррогатный айдишник
+		Error       string
+		StartedAt   time.Time
+		FinishedAt  time.Time
+		Status      ProgressStatus
+		RunResultID int64     `bun:"unique:version_result_id"`
 		RunResult   RunResult `bun:"rel:belongs-to,join:run_result_id=id"`
+		Version     string    `bun:"unique:version_result_id"`
 	}
 )
 
 const (
-	RunStatusStarted  RunStatus = "started"
-	RunStatusFinished RunStatus = "finished"
-	RunStatusError    RunStatus = "error"
+	ProgressStatusStarted  ProgressStatus = "started"
+	ProgressStatusFinished ProgressStatus = "finished"
+	ProgressStatusError    ProgressStatus = "error"
 )
 
 var allModels = []any{

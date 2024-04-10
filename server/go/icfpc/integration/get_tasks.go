@@ -3,8 +3,8 @@ package integration
 import "icfpc/database"
 
 var allTasks = []database.Task{
-	{ExternalID: "1", Data: 5},
-	{ExternalID: "2", Data: 10},
+	{ExternalID: "icfpc_id_1", Data: 5},
+	{ExternalID: "icfpc_id_1", Data: 10},
 }
 
 type Error struct {
