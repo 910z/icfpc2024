@@ -4,29 +4,29 @@ services:
     image: postgres
     restart: always
     ports:
-      - "5432:5432"
+      - "5050:5432"
     networks:
       - icfpc
     environment:
-      POSTGRES_PASSWORD: 'ghjdthrf'
+      POSTGRES_PASSWORD: 'postgres_icfpc'
     volumes:
       - './init.sql:/docker-entrypoint-initdb.d/init.sql'
       - 'postgres:/var/lib/postgresql/data'
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    depends_on:
-      - postgres
-    restart: always
-    networks:
-      - icfpc
-    ports:
-      - "5050:80"
-    environment:
-      PGADMIN_DEFAULT_EMAIL: 'user@test.com'
-      PGADMIN_DEFAULT_PASSWORD: 'ghjdthrf'
-    volumes:
-      - 'pgadmin:/var/lib/pgadmin'
+#  pgadmin:
+#    image: dpage/pgadmin4:latest
+#    depends_on:
+#      - postgres
+#    restart: always
+#    networks:
+#      - icfpc
+#    ports:
+#      - "5055:80"
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: 'user@test.com'
+#      PGADMIN_DEFAULT_PASSWORD: 'ghjdthrf'
+#    volumes:
+#      - 'pgadmin:/var/lib/pgadmin'
 
 networks:
   icfpc:
@@ -34,4 +34,4 @@ networks:
 
 volumes:
   postgres:
-  pgadmin:
+#  pgadmin:
