@@ -3,9 +3,12 @@ package workers
 import (
 	"context"
 	"errors"
+	"fmt"
+	"log/slog"
 	"time"
 
 	"icfpc/database"
+	"icfpc/evaluation"
 	"icfpc/integration"
 
 	"github.com/uptrace/bun"
@@ -28,31 +31,68 @@ const (
 	SortOrderDesc SortOrder = "DESC"
 )
 
+type extEvalResult struct {
+	database.RunEvalResult
+	Solution   database.Solution
+	ExternalID string
+	R          int // сюда попадет ненужный row_number(). это хак, чтобы
+	// не перечислять вручную все поля runevalresult-а, а сделать select *.
+	// хотя, может, можно и забить на остальные поля, селектить только score
+}
+
 func (b bestSender) Run(
 	ctx context.Context,
 	ord SortOrder,
-	send func(context.Context, database.RunEvalResult) error,
+	send func(context.Context, string, database.Solution) error,
 ) error {
 	return runPeriodical(ctx, time.Second, func(ctx context.Context) error {
-		var best database.RunEvalResult
-		q := b.db.NewSelect().
-			Model(&best).
-			Where("status = ?", database.ProgressStatusFinished).
-			Where("error IS NULL OR error = ''").
-			Order("score " + string(ord)).Limit(1)
-		if err := q.Scan(ctx); err != nil {
-			return err
-		}
-		err := send(ctx, best)
-		if errors.Is(err, integration.Error) {
-			return nil
-		}
+		var best []extEvalResult
+		err := b.db.NewRaw(fmt.Sprintf(`with allRes as (
+			select
+			  run_eval_results.*,
+			  run_results.solution,
+			  tasks.external_id,
+			  row_number() over w as r
+			from
+			  run_eval_results
+			  join run_results on run_results.id = run_eval_results.run_result_id
+			  join tasks on tasks.id = run_results.task_id
+			where
+			  run_eval_results.version = ?
+			  AND run_eval_results.status = ?
+			  AND run_eval_results.submission_status = ''
+			window w as (
+				partition by run_results.task_id
+				order by
+				  score %s
+			  )
+		  )
+		  select
+			*
+		  from
+			allRes
+		  where
+		  	r = 1`, ord), evaluation.Version, database.ProgressStatusFinished).Scan(ctx, &best)
+		slog.InfoContext(ctx, "sending best", slog.Int("count", len(best)))
 		if err != nil {
 			return err
 		}
+		for i := range best {
+			err = send(ctx, best[i].ExternalID, best[i].Solution)
+			if errors.Is(err, integration.Error) {
+				continue
+			}
+			if err != nil {
+				return err
+			}
+			best[i].SubmissionStatus = database.SubmissionStatusPending
+			best[i].SubmittedAt = time.Now().UTC()
+			err := database.UpdateEnsured(ctx, b.db.NewUpdate().Model(&best[i].RunEvalResult).WherePK())
+			if err != nil {
+				return err
+			}
+		}
 
-		best.SubmissionStatus = database.SubmissionStatusPending
-		best.SubmittedAt = time.Now().UTC()
-		return database.UpdateEnsured(ctx, b.db.NewUpdate().Model(&best).WherePK())
+		return nil
 	})
 }

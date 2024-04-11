@@ -45,9 +45,10 @@ func main() {
 	algoRunner := workers.NewAlgorithmRunner(db)
 	taskFetcher := workers.NewTasksFetcher(db)
 	solutionEvaluator := workers.NewSolutionEvaluator(db)
+	bestSender := workers.NewBestSender(db)
 
 	go func() {
-		if err := algoRunner.Run(ctx, workers.AllAlgorithms); err != nil {
+		if err := bestSender.Run(ctx, workers.SortOrderDesc, integration.SendSolution); err != nil {
 			panic(err)
 		}
 	}()
