@@ -8,6 +8,7 @@ import (
 	"icfpc/logs"
 	"icfpc/server"
 	"icfpc/workers"
+	"log/slog"
 	_ "net/http/pprof"
 	"os"
 
@@ -25,7 +26,7 @@ func main() {
 
 	ctx := context.Background()
 
-	logs.SetDefaultSlog()
+	slog.SetDefault(logs.New())
 
 	connStr := os.Getenv("DATABASE_URL")
 	if connStr == "" { // в тесте

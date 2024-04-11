@@ -106,7 +106,7 @@ func (r Runner) Run(ctx context.Context, algs []algorithms.IAlgorithm) error {
 			return err
 		}
 
-		slog.InfoContext(ctx, "runs planned", slog.Any("runs", runs))
+		slog.InfoContext(ctx, "runs planned", slog.Any("length", len(runs)))
 		addToTaskCache(ctx, r.db, getTasksToAdd(taskCache, runs), taskCache)
 		for _, plannedRun := range runs {
 			task := taskCache[plannedRun.TaskID]

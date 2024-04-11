@@ -3,9 +3,10 @@ package logs
 import (
 	"context"
 	"icfpc/database"
-	"log"
 	"log/slog"
 	"os"
+
+	"github.com/lmittmann/tint"
 )
 
 type runResultKey struct{}
@@ -31,9 +32,8 @@ func (h *contextHandler) Handle(ctx context.Context, r slog.Record) error {
 	return h.Handler.Handle(ctx, r)
 }
 
-func SetDefaultSlog() {
-	new := slog.New(&contextHandler{slog.Default().Handler()})
-	slog.SetDefault(new)
-	log.SetOutput(os.Stdout) // https://github.com/golang/go/issues/61892
-	log.SetFlags(log.Ldate | log.Ltime)
+func New() *slog.Logger {
+	new := tint.NewHandler(os.Stdout, nil)
+	withContext := (&contextHandler{new})
+	return slog.New(withContext)
 }
