@@ -35,9 +35,11 @@ type extEvalResult struct {
 	database.RunEvalResult
 	Solution   database.Solution
 	ExternalID string
-	R          int // сюда попадет ненужный row_number(). это хак, чтобы
-	// не перечислять вручную все поля runevalresult-а, а сделать select *.
-	// хотя, может, можно и забить на остальные поля, селектить только score
+
+	// на самом деле RowNum не нужен.
+	// это просто чтобы не перечислять вручную все поля runevalresult-а, а сделать select *.
+	// хотя, может, можно селектить только score, а апдейтить только ненулевые поля
+	RowNum int
 }
 
 func (b bestSender) Run(
@@ -52,7 +54,7 @@ func (b bestSender) Run(
 			  run_eval_results.*,
 			  run_results.solution,
 			  tasks.external_id,
-			  row_number() over w as r
+			  row_number() over w as row_num
 			from
 			  run_eval_results
 			  join run_results on run_results.id = run_eval_results.run_result_id
@@ -72,7 +74,7 @@ func (b bestSender) Run(
 		  from
 			allRes
 		  where
-		  	r = 1`, ord), evaluation.Version, database.ProgressStatusFinished).Scan(ctx, &best)
+		  	row_num = 1`, ord), evaluation.Version, database.ProgressStatusFinished).Scan(ctx, &best)
 		slog.InfoContext(ctx, "sending best", slog.Int("count", len(best)))
 		if err != nil {
 			return err
