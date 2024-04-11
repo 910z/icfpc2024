@@ -43,8 +43,11 @@ func (e evaluator) evalEverythingPresent(ctx context.Context) error {
 	var runResults []database.RunResult
 	if err := e.db.NewSelect().
 		Model(&runResults).
-		Join("FULL OUTER JOIN run_eval_results ON run_result.id = run_eval_results.run_result_id").
+		Join(`FULL OUTER JOIN run_eval_results ON
+			run_result.id = run_eval_results.run_result_id
+			AND run_eval_results.version = ?`, evaluation.Version).
 		Where("run_eval_results.run_result_id is null").
+		Where("run_result.status = ?", database.ProgressStatusFinished).
 		Scan(ctx); err != nil {
 
 		return fmt.Errorf("failed to get task results: %w", err)
@@ -82,7 +85,7 @@ func (e evaluator) runEval(ctx context.Context, runRes *database.RunResult, runE
 			slog.ErrorContext(ctx, "recovered panic in runEval", slog.Any("error", err))
 			panic(err)
 		} else {
-			slog.InfoContext(ctx, "evaluation finished")
+			slog.InfoContext(ctx, "evaluation finished", slog.Int64("score", runEvalRes.Score))
 		}
 	}()
 	updateQ := e.db.NewUpdate().Model(&runEvalRes).WherePK()

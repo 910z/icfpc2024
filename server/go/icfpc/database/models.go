@@ -12,7 +12,8 @@ type (
 	SolutionExplanation any
 	EvalExplanation     any
 
-	ProgressStatus string
+	ProgressStatus   string
+	SubmissionStatus string
 
 	RunResult struct {
 		ID               int64               `bun:"id,pk,autoincrement"`
@@ -43,14 +44,18 @@ type (
 
 	RunEvalResult struct {
 		EvalResult
-		ID          int64 `bun:"id,pk,autoincrement"` // суррогатный айдишник
-		Error       string
-		StartedAt   time.Time
-		FinishedAt  time.Time
-		Status      ProgressStatus
-		RunResultID int64     `bun:"unique:version_result_id"`
-		RunResult   RunResult `bun:"rel:belongs-to,join:run_result_id=id"`
-		Version     string    `bun:"unique:version_result_id"`
+		ID                  int64 `bun:"id,pk,autoincrement"` // суррогатный айдишник
+		Error               string
+		StartedAt           time.Time
+		FinishedAt          time.Time
+		Status              ProgressStatus
+		RunResultID         int64     `bun:"unique:version_result_id"`
+		RunResult           RunResult `bun:"rel:belongs-to,join:run_result_id=id"`
+		Version             string    `bun:"unique:version_result_id"`
+		SubmissionStatus    SubmissionStatus
+		SubmittedAt         time.Time
+		SubmissionCheckedAt time.Time
+		SubmissionError     string
 	}
 )
 
@@ -58,6 +63,10 @@ const (
 	ProgressStatusStarted  ProgressStatus = "started"
 	ProgressStatusFinished ProgressStatus = "finished"
 	ProgressStatusError    ProgressStatus = "error"
+
+	SubmissionStatusPending SubmissionStatus = "pending"
+	SubmissionStatusOk      SubmissionStatus = "ok"
+	SubmissionStatusError   SubmissionStatus = "error"
 )
 
 var allModels = []any{

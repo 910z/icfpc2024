@@ -53,6 +53,12 @@ func main() {
 	}()
 
 	go func() {
+		if err := algoRunner.Run(ctx, workers.AllAlgorithms); err != nil {
+			panic(err)
+		}
+	}()
+
+	go func() {
 		if err := taskFetcher.Run(ctx, integration.GetTasks); err != nil {
 			panic(err)
 		}

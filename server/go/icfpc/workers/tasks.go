@@ -21,7 +21,7 @@ func NewTasksFetcher(db *bun.DB) *TasksFetcher {
 }
 
 func (t *TasksFetcher) isRetriable(err error) bool {
-	return errors.Is(err, integration.Error{})
+	return errors.Is(err, integration.Error)
 }
 
 func (t *TasksFetcher) Run(
