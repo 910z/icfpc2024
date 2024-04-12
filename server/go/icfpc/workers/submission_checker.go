@@ -21,7 +21,7 @@ func NewSubmissionChecker(db *bun.DB) *submissionChecker {
 
 func (s submissionChecker) Run(
 	ctx context.Context,
-	fetch func(context.Context, database.RunEvalResult) error,
+	fetch func(context.Context, []database.RunEvalResult) error,
 ) error {
 	return runPeriodical(ctx, time.Second, func(ctx context.Context) error {
 		return nil

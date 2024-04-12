@@ -47,7 +47,7 @@ func (e evaluator) evalEverythingPresent(ctx context.Context) error {
 			run_result.id = run_eval_results.run_result_id
 			AND run_eval_results.version = ?`, evaluation.Version).
 		Where("run_eval_results.run_result_id is null").
-		Where("run_result.status = ?", database.ProgressStatusFinished).
+		Where("run_result.algorithm_status = ?", database.ProgressStatusFinished).
 		Scan(ctx); err != nil {
 
 		return fmt.Errorf("failed to get task results: %w", err)

@@ -10,6 +10,7 @@ import (
 	"icfpc/database"
 	"icfpc/evaluation"
 	"icfpc/integration"
+	"icfpc/logs"
 
 	"github.com/uptrace/bun"
 )
@@ -31,15 +32,15 @@ const (
 	SortOrderDesc SortOrder = "DESC"
 )
 
-type extEvalResult struct {
-	database.RunEvalResult
-	Solution   database.Solution
-	ExternalID string
-
-	// на самом деле RowNum не нужен.
-	// это просто чтобы не перечислять вручную все поля runevalresult-а, а сделать select *.
-	// хотя, может, можно селектить только score, а апдейтить только ненулевые поля
-	RowNum int
+type fullResult struct {
+	Solution         database.Solution
+	RunResultId      int64
+	TaskID           int64
+	TaskExternalId   string
+	AlgorithmVersion string
+	AlgorithmName    string
+	SubmissionStatus database.SubmissionStatus
+	Score            database.Score
 }
 
 func (b bestSender) Run(
@@ -48,13 +49,21 @@ func (b bestSender) Run(
 	send func(context.Context, string, database.Solution) error,
 ) error {
 	return runPeriodical(ctx, time.Second, func(ctx context.Context) error {
-		var best []extEvalResult
-		err := b.db.NewRaw(fmt.Sprintf(`with allRes as (
+		var best []fullResult
+		err := b.db.NewRaw(fmt.Sprintf(`with cte as (
 			select
-			  run_eval_results.*,
 			  run_results.solution,
-			  tasks.external_id,
-			  row_number() over w as row_num
+			  run_results.id AS run_result_id,
+			  tasks.external_id AS task_external_id,
+			  ROW_NUMBER() over w as row_num,
+			  run_results.submission_status,
+			  run_results.algorithm_version,
+			  run_results.algorithm_name,
+			  run_results.task_id,
+			  case run_results.submission_status
+				when 'checked' then run_results.external_score
+				else run_eval_results.score
+			  end as score
 			from
 			  run_eval_results
 			  join run_results on run_results.id = run_eval_results.run_result_id
@@ -62,34 +71,52 @@ func (b bestSender) Run(
 			where
 			  run_eval_results.version = ?
 			  AND run_eval_results.status = ?
-			  AND run_eval_results.submission_status = ''
 			window w as (
 				partition by run_results.task_id
-				order by
-				  score %s
+				order by score %s
 			  )
 		  )
 		  select
-			*
-		  from
-			allRes
-		  where
-		  	row_num = 1`, ord), evaluation.Version, database.ProgressStatusFinished).Scan(ctx, &best)
-		slog.InfoContext(ctx, "sending best", slog.Int("count", len(best)))
+		    solution,
+		    run_result_id,
+			algorithm_version,
+			algorithm_name,
+			task_id,
+			task_external_id,
+			submission_status,
+			score
+		  from cte where row_num = 1
+		  `, ord), evaluation.Version, database.ProgressStatusFinished).Scan(ctx, &best)
 		if err != nil {
 			return err
 		}
 		for i := range best {
-			err = send(ctx, best[i].ExternalID, best[i].Solution)
+			if best[i].SubmissionStatus != database.SubmissionStatusNotSubmitted {
+				// уже отправлялся
+				continue
+			}
+			runCtx := logs.WithRunResultLogging(ctx, database.RunResult{
+				TaskID:           best[i].TaskID,
+				AlgorithmName:    best[i].AlgorithmName,
+				AlgorithmVersion: best[i].AlgorithmVersion,
+			})
+			slog.InfoContext(runCtx, "sending best", slog.Any("score", best[i].Score))
+			err = send(runCtx, best[i].TaskExternalId, best[i].Solution)
 			if errors.Is(err, integration.Error) {
+				// ошибки в апишке ретраим
 				continue
 			}
 			if err != nil {
 				return err
 			}
-			best[i].SubmissionStatus = database.SubmissionStatusPending
-			best[i].SubmittedAt = time.Now().UTC()
-			err := database.UpdateEnsured(ctx, b.db.NewUpdate().Model(&best[i].RunEvalResult).WherePK())
+			runRes := database.RunResult{
+				ID: best[i].RunResultId,
+				Submission: database.Submission{
+					SubmissionStatus: database.SubmissionStatusPending,
+					SubmittedAt:      time.Now().UTC(),
+				},
+			}
+			err := database.UpdateEnsured(ctx, b.db.NewUpdate().Model(&runRes).WherePK().OmitZero())
 			if err != nil {
 				return err
 			}

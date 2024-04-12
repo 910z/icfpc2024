@@ -116,11 +116,11 @@ func (r Runner) Run(ctx context.Context, algs []algorithms.IAlgorithm) error {
 			}
 
 			runResult := database.RunResult{
-				TaskID:           task.ID,
-				AlgorithmName:    algorithms.GetName(algorithm),
-				AlgorithmVersion: algorithm.Version(),
-				Status:           database.ProgressStatusStarted,
-				StartedAt:        time.Now().UTC(),
+				TaskID:             task.ID,
+				AlgorithmName:      algorithms.GetName(algorithm),
+				AlgorithmVersion:   algorithm.Version(),
+				AlgorithmStatus:    database.ProgressStatusStarted,
+				AlgorithmStartedAt: time.Now().UTC(),
 			}
 
 			err := r.db.NewInsert().Model(&runResult).
@@ -178,8 +178,8 @@ func (r Runner) runWorker(
 
 	updateQuery := r.db.NewUpdate().Model(&runResult).WherePK()
 	handleError := func(err error) {
-		runResult.Status = database.ProgressStatusError
-		runResult.FinishedAt = time.Now().UTC()
+		runResult.AlgorithmStatus = database.ProgressStatusError
+		runResult.AlgorithmFinishedAt = time.Now().UTC()
 		runResult.Error = err.Error()
 
 		if err := database.UpdateEnsured(ctx, updateQuery); err != nil {
@@ -194,10 +194,10 @@ func (r Runner) runWorker(
 		return
 	}
 
-	runResult.FinishedAt = time.Now().UTC()
+	runResult.AlgorithmFinishedAt = time.Now().UTC()
 	runResult.Solution = solution
 	runResult.Explanation = explanation
-	runResult.Status = database.ProgressStatusFinished
+	runResult.AlgorithmStatus = database.ProgressStatusFinished
 
 	if err := database.UpdateEnsured(ctx, updateQuery); err != nil {
 		handleError(err)
