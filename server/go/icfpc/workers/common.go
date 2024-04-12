@@ -6,7 +6,7 @@ import (
 )
 
 func runPeriodical(ctx context.Context, interval time.Duration, f func(ctx context.Context) error) error {
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(interval)
 
 	for {
 		select {

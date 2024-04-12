@@ -46,6 +46,13 @@ func main() {
 	taskFetcher := workers.NewTasksFetcher(db)
 	solutionEvaluator := workers.NewSolutionEvaluator(db)
 	bestSender := workers.NewBestSender(db)
+	checker := workers.NewSubmissionChecker(db)
+
+	go func() {
+		if err := checker.Run(ctx, integration.GetSubmissionsStatus); err != nil {
+			panic(err)
+		}
+	}()
 
 	go func() {
 		if err := bestSender.Run(ctx, workers.SortOrderDesc, integration.SendSolution); err != nil {

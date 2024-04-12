@@ -46,7 +46,7 @@ type fullResult struct {
 func (b bestSender) Run(
 	ctx context.Context,
 	ord SortOrder,
-	send func(context.Context, string, database.Solution) error,
+	send func(context.Context, string, database.Solution) (string, error),
 ) error {
 	return runPeriodical(ctx, time.Second, func(ctx context.Context) error {
 		var best []fullResult
@@ -101,7 +101,7 @@ func (b bestSender) Run(
 				AlgorithmVersion: best[i].AlgorithmVersion,
 			})
 			slog.InfoContext(runCtx, "sending best", slog.Any("score", best[i].Score))
-			err = send(runCtx, best[i].TaskExternalId, best[i].Solution)
+			token, err := send(runCtx, best[i].TaskExternalId, best[i].Solution)
 			if errors.Is(err, integration.Error) {
 				// ошибки в апишке ретраим
 				continue
@@ -114,9 +114,14 @@ func (b bestSender) Run(
 				Submission: database.Submission{
 					SubmissionStatus: database.SubmissionStatusPending,
 					SubmittedAt:      time.Now().UTC(),
+					SubmissionToken:  token,
 				},
 			}
-			err := database.UpdateEnsured(ctx, b.db.NewUpdate().Model(&runRes).WherePK().OmitZero())
+			err = database.UpdateEnsured(ctx, b.db.NewUpdate().
+				Model(&runRes).
+				WherePK().
+				ExcludeColumn("solution").
+				OmitZero())
 			if err != nil {
 				return err
 			}

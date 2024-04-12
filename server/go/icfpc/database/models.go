@@ -22,6 +22,8 @@ type (
 		SubmittedAt         time.Time
 		SubmissionCheckedAt time.Time
 		SubmissionError     string
+		SubmissionToken     string
+		ExternalScore       Score
 	}
 
 	RunResult struct {
@@ -37,7 +39,6 @@ type (
 		AlgorithmStartedAt  time.Time
 		AlgorithmFinishedAt time.Time
 		Error               string
-		ExternalScore       Score
 	}
 
 	TaskData = int64
