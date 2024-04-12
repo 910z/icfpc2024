@@ -18,11 +18,13 @@ import java.awt.RenderingHints
 import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.nio.file.Files
 import javax.imageio.ImageIO
 import kotlin.math.max
 
 @Controller
-class PreviewController (
+class PreviewController(
     val problemRepository: ProblemRepository,
     val solutionRepository: SolutionRepository,
     val contentRepository: ContentRepository
@@ -35,111 +37,121 @@ class PreviewController (
         size: Int = 0,
         response: HttpServletResponse
     ): ResponseEntity<ByteArray> {
-        response.setHeader("Cache-Control", "max-age=3600")
-        val solution = solutionRepository.getReferenceById(id)
-        val problem = problemRepository.getReferenceById(solution.problemId)
-        val task = problem.getContent(contentRepository)
-        val solve = solution.getContent(contentRepository)
+        response.setHeader("Cache-Control", "max-age=60")
+        val res = cache("$id.$imgSize.$size") {
+            val solution = solutionRepository.getReferenceById(id)
+            val problem = problemRepository.getReferenceById(solution.problemId)
+            val task = problem.getContent(contentRepository)
+            val solve = solution.getContent(contentRepository)
 
-        if (size == 1) {
-            val iSize = max(task.attendees.map { it.x }.max() + 5.0, task.attendees.map { it.y }.max() + 5.0)
-            val center = Point(
-                (task.attendees.map { it.x }.max() + 5.0) / 2,
-                (task.attendees.map { it.y }.max() + 5.0) / 2
-            )
-            val image = ImageDraw(imgSize ?: 1000, center, iSize) {
-                color = Color.LIGHT_GRAY
-                fillRect(
-                    Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
-                    task.stage_width,
-                    task.stage_height,
+            if (size == 1) {
+                val iSize = max(task.attendees.map { it.x }.max() + 5.0, task.attendees.map { it.y }.max() + 5.0)
+                val center = Point(
+                    (task.attendees.map { it.x }.max() + 5.0) / 2,
+                    (task.attendees.map { it.y }.max() + 5.0) / 2
                 )
-                color = Color.BLACK
-                drawRect(
-                    Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
-                    task.stage_width,
-                    task.stage_height,
-                )
-
-                solve.placements.forEachIndexed { index, it ->
-                    color = Color.getHSBColor(
-                        task.musicians[index].toFloat() / task.musicians.max(),
-                        0.5F,
-                        0.5F
+                val image = ImageDraw(imgSize ?: 1000, center, iSize) {
+                    color = Color.LIGHT_GRAY
+                    fillRect(
+                        Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
+                        task.stage_width,
+                        task.stage_height,
                     )
-                    fillCircle(it, 5.0)
-                }
-
-                color = Color.LIGHT_GRAY
-
-                task.pillars.forEach { pillar  ->
-                    fillCircle(Point(pillar.center[0], pillar.center[1]), pillar.radius)
-                }
-
-                color = Color(0xFF, 0xFD, 0xD0)
-
-                task.attendees.forEach { attendee ->
-                    fillCircle(Point(attendee.x, attendee.y), 5.0)
-                }
-            }
-
-            val baos = ByteArrayOutputStream()
-            ImageIO.write(image, "PNG", baos)
-            baos.toByteArray()
-
-            return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_PNG)
-                .body(baos.toByteArray())
-        } else {
-            val iSize = max(task.stage_width, task.stage_height) * 1.05
-            val center = Point(
-                task.stage_bottom_left[0] + task.stage_width / 2,
-                task.stage_bottom_left[1] + task.stage_height / 2
-            )
-            val image = ImageDraw(imgSize ?: 1000, center, iSize) {
-                color = Color.LIGHT_GRAY
-                fillRect(
-                    Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
-                    task.stage_width,
-                    task.stage_height,
-                )
-                color = Color.BLACK
-                drawRect(
-                    Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
-                    task.stage_width,
-                    task.stage_height,
-                )
-
-                solve.placements.forEachIndexed { index, it ->
-                    color = Color.getHSBColor(
-                        task.musicians[index].toFloat() / task.musicians.max(),
-                        0.5F,
-                        0.5F
+                    color = Color.BLACK
+                    drawRect(
+                        Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
+                        task.stage_width,
+                        task.stage_height,
                     )
-                    fillCircle(it, 5.0)
+
+                    solve.placements.forEachIndexed { index, it ->
+                        color = Color.getHSBColor(
+                            task.musicians[index].toFloat() / task.musicians.max(),
+                            0.5F,
+                            0.5F
+                        )
+                        fillCircle(it, 5.0)
+                    }
+
+                    color = Color.LIGHT_GRAY
+
+                    task.pillars.forEach { pillar ->
+                        fillCircle(Point(pillar.center[0], pillar.center[1]), pillar.radius)
+                    }
+
+                    color = Color(0xFF, 0xFD, 0xD0)
+
+                    task.attendees.forEach { attendee ->
+                        fillCircle(Point(attendee.x, attendee.y), 5.0)
+                    }
                 }
 
-                color = Color.LIGHT_GRAY
+                val baos = ByteArrayOutputStream()
+                ImageIO.write(image, "PNG", baos)
+                baos.toByteArray()
+            } else {
+                val iSize = max(task.stage_width, task.stage_height) * 1.05
+                val center = Point(
+                    task.stage_bottom_left[0] + task.stage_width / 2,
+                    task.stage_bottom_left[1] + task.stage_height / 2
+                )
+                val image = ImageDraw(imgSize ?: 1000, center, iSize) {
+                    color = Color.LIGHT_GRAY
+                    fillRect(
+                        Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
+                        task.stage_width,
+                        task.stage_height,
+                    )
+                    color = Color.BLACK
+                    drawRect(
+                        Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
+                        task.stage_width,
+                        task.stage_height,
+                    )
 
-                task.pillars.forEach { pillar ->
-                    fillCircle(Point(pillar.center[0], pillar.center[1]), pillar.radius)
+                    solve.placements.forEachIndexed { index, it ->
+                        color = Color.getHSBColor(
+                            task.musicians[index].toFloat() / task.musicians.max(),
+                            0.5F,
+                            0.5F
+                        )
+                        fillCircle(it, 5.0)
+                    }
+
+                    color = Color.LIGHT_GRAY
+
+                    task.pillars.forEach { pillar ->
+                        fillCircle(Point(pillar.center[0], pillar.center[1]), pillar.radius)
+                    }
+
+                    color = Color(0xFF, 0xFD, 0xD0)
+
+                    task.attendees.forEach { attendee ->
+                        fillCircle(Point(attendee.x, attendee.y), 5.0)
+                    }
                 }
 
-                color = Color(0xFF, 0xFD, 0xD0)
-
-                task.attendees.forEach { attendee ->
-                    fillCircle(Point(attendee.x, attendee.y), 5.0)
-                }
+                val baos = ByteArrayOutputStream()
+                ImageIO.write(image, "PNG", baos)
+                baos.toByteArray()
             }
-
-            val baos = ByteArrayOutputStream()
-            ImageIO.write(image, "PNG", baos)
-            baos.toByteArray()
-
-            return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_PNG)
-                .body(baos.toByteArray())
         }
+        return ResponseEntity.ok()
+            .contentType(MediaType.IMAGE_PNG)
+            .body(res)
+    }
+
+    fun cache(key: String, lambda: () -> ByteArray): ByteArray {
+        val file = File("$DIR/$key.png")
+        if (!file.exists()) {
+            file.parentFile.mkdirs()
+            Files.write(file.toPath(), lambda())
+        }
+        return file.readBytes()
+    }
+
+    companion object {
+        val DIR = "temp"
     }
 }
 
@@ -187,11 +199,11 @@ data class ImageDraw(val size: Int, val center: Point, val scale: Double, val im
 
     fun fillRect(from: Point, width: Double, height: Double) {
         val a = convert(from)
-        g2d.fillRect( a.x.toInt(), a.y.toInt(), convert(width).toInt(),  convert(height).toInt())
+        g2d.fillRect(a.x.toInt(), a.y.toInt(), convert(width).toInt(), convert(height).toInt())
     }
 
     fun drawRect(from: Point, width: Double, height: Double) {
         val a = convert(from)
-        g2d.drawRect( a.x.toInt(), a.y.toInt(), convert(width).toInt(),  convert(height).toInt())
+        g2d.drawRect(a.x.toInt(), a.y.toInt(), convert(width).toInt(), convert(height).toInt())
     }
 }

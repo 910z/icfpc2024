@@ -1,11 +1,7 @@
 import React, {useState} from 'react';
 import {Table} from "react-bootstrap";
 import {Solution} from "../types";
-
-function get(url: string) {
-    console.log(`get from ${url}`);
-    return fetch(url).then((res) => res.json());
-}
+import {domain, get} from "./Problems";
 
 export const Solutions: React.FC = () => {
     const [solutions, setSolutions] = useState([] as Solution[]);
@@ -14,7 +10,7 @@ export const Solutions: React.FC = () => {
 
     function upd() {
         console.log("upd")
-        get("http://localhost:8080/api/solutions")
+        get(`http://${domain}/api/solutions`)
             .then(data => {
                 if (data != solutions) {
                     setSolutions(data);
@@ -78,7 +74,7 @@ export const Solutions: React.FC = () => {
         {solutions?.map(({id, problemId, score, tags}) => (
             <tr>
                 <td>{problemId}</td>
-                <td><img src={`http://localhost:8080/preview/${id}?imgSize=200`}/></td>
+                <td><img src={`http://${domain}/preview/${id}?imgSize=200`}/></td>
                 <td>{score ?? 0}</td>
                 <td>{tags ?? []}</td>
             </tr>

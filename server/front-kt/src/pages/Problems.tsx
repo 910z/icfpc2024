@@ -2,10 +2,12 @@ import React, {useState} from 'react';
 import {Table} from "react-bootstrap";
 import {Problem} from "../types";
 
-function get(url: string) {
+export function get(url: string) {
     console.log(`get from ${url}`);
     return fetch(url).then((res) => res.json());
 }
+
+export const domain = "localhost:8080"
 
 export const Problems: React.FC = () => {
     const [problems, setProblems] = useState([] as Problem[]);
@@ -14,7 +16,7 @@ export const Problems: React.FC = () => {
 
     function upd() {
         console.log("upd")
-        get("http://localhost:8080/api/problems")
+        get(`http://${domain}/api/problems`)
             .then(data => {
                 if (data != problems) {
                     setProblems(data);
@@ -80,7 +82,7 @@ export const Problems: React.FC = () => {
                 <td>{id}</td>
                 <td>{
                     bestSolution != null
-                        ? <img src={`http://localhost:8080/preview/${bestSolution.id}?imgSize=200`}/>
+                        ? <img src={`http://${domain}/preview/${bestSolution.id}?imgSize=200`}/>
                         : <p>Nope</p>
                 }</td>
                 {/*<td>{contentId}</td>*/}
