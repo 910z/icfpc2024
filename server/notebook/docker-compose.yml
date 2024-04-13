@@ -10,8 +10,8 @@ services:
       JUPYTER_ENABLE_LAB: yes
       CHOWN_HOME: yes
     volumes:
-      - '../workspace:/home/jovyan/workspace'
-      - '../problems:/home/jovyan/problems'
+      - '../../workspace:/home/jovyan/workspace'
+      - '../../problems:/home/jovyan/problems'
 
   go:
     image: gopherdata/gophernotes:latest
@@ -20,8 +20,8 @@ services:
     networks:
       - icfpc
     volumes:
-      - '../workspace:/notebook/workspace'
-      - '../problems:/notebook/problems'
+      - '../../workspace:/notebook/workspace'
+      - '../../problems:/notebook/problems'
 
 networks:
   icfpc:
