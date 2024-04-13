@@ -1,0 +1,28 @@
+version: '3.9'
+services:
+  kotlin:
+    image: ghcr.io/knonm/kotlin-notebook:latest
+    ports:
+      - "8888:8888"
+    networks:
+      - icfpc
+    environment:
+      JUPYTER_ENABLE_LAB: yes
+      CHOWN_HOME: yes
+    volumes:
+      - '../../workspace:/home/jovyan/workspace'
+      - '../../problems:/home/jovyan/problems'
+
+  go:
+    image: gopherdata/gophernotes:latest
+    ports:
+      - "9999:8888"
+    networks:
+      - icfpc
+    volumes:
+      - '../../workspace:/notebook/workspace'
+      - '../../problems:/notebook/problems'
+
+networks:
+  icfpc:
+    driver: bridge
