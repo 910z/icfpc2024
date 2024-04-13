@@ -48,7 +48,7 @@ func (b bestSender) Run(
 	ord SortOrder,
 	send func(context.Context, string, database.Solution) (string, error),
 ) error {
-	return runPeriodical(ctx, time.Second, func(ctx context.Context) error {
+	return runPeriodical(ctx, time.Second, func() error {
 		var best []fullResult
 		err := b.db.NewRaw(fmt.Sprintf(`with cte as (
 			select

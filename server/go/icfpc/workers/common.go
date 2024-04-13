@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func runPeriodical(ctx context.Context, interval time.Duration, f func(ctx context.Context) error) error {
+func runPeriodical(ctx context.Context, interval time.Duration, f func() error) error {
 	ticker := time.NewTicker(interval)
 
 	for {
@@ -13,7 +13,7 @@ func runPeriodical(ctx context.Context, interval time.Duration, f func(ctx conte
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-ticker.C:
-			if err := f(ctx); err != nil {
+			if err := f(); err != nil {
 				return err
 			}
 		}

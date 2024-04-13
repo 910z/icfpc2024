@@ -100,7 +100,7 @@ func getAlgorithm(algs []algorithms.IAlgorithm, name string, version string) alg
 func (r Runner) Run(ctx context.Context, algs []algorithms.IAlgorithm) error {
 	taskCache := make(map[int64]database.Task)
 
-	for {
+	return runPeriodical(ctx, time.Second, func() error {
 		runs, err := r.planRuns(ctx, algs)
 		if err != nil {
 			return err
@@ -138,8 +138,8 @@ func (r Runner) Run(ctx context.Context, algs []algorithms.IAlgorithm) error {
 			go r.runWorker(workerContext, task, algorithm, runResult)
 		}
 
-		time.Sleep(time.Second)
-	}
+		return nil
+	})
 }
 
 func safeSolve(

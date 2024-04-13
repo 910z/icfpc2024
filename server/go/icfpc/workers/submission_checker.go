@@ -24,7 +24,7 @@ func (s submissionChecker) Run(
 	ctx context.Context,
 	fetch func(context.Context, []database.RunResult) (integration.CheckedSubmissions, error),
 ) error {
-	return runPeriodical(ctx, time.Second, func(ctx context.Context) error {
+	return runPeriodical(ctx, time.Second, func() error {
 		var pending []database.RunResult
 		q := s.db.NewSelect().
 			Model(&pending).
