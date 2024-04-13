@@ -8,19 +8,20 @@ import (
 	"icfpc/database"
 	"icfpc/logs"
 	"log/slog"
+	"reflect"
 	"time"
 
 	"github.com/uptrace/bun"
 )
 
-func NewAlgorithmRunner(db *bun.DB, bus bus) *Runner {
-	return &Runner{
+func NewAlgorithmRunner(db *bun.DB, bus bus) *algorithmRunner {
+	return &algorithmRunner{
 		db:  db,
 		bus: bus,
 	}
 }
 
-type Runner struct {
+type algorithmRunner struct {
 	db  *bun.DB
 	bus bus
 }
@@ -38,7 +39,7 @@ func toAlgorithmDatas(algs []algorithms.IAlgorithm) []algorithmData {
 	return result
 }
 
-func (r Runner) planRuns(
+func (r algorithmRunner) planRuns(
 	ctx context.Context,
 	currentAlgorithms []algorithms.IAlgorithm,
 ) ([]database.RunResult, error) {
@@ -99,16 +100,18 @@ func getAlgorithm(algs []algorithms.IAlgorithm, name string, version string) alg
 	return nil
 }
 
-func (r Runner) Run(ctx context.Context, algs []algorithms.IAlgorithm) error {
+func (r algorithmRunner) Run(ctx context.Context, algs []algorithms.IAlgorithm) error {
 	taskCache := make(map[int64]database.Task)
 
-	return runPeriodical(ctx, time.Second, r.bus.tasksAdded, func() error {
+	return runPeriodical(logs.WithType(ctx, reflect.TypeOf(r)), time.Second, r.bus.tasksAdded, func() error {
 		runs, err := r.planRuns(ctx, algs)
 		if err != nil {
 			return err
 		}
 
-		slog.InfoContext(ctx, "runs planned", slog.Any("length", len(runs)))
+		if len(runs) != 0 {
+			slog.InfoContext(ctx, "runs planned", slog.Any("length", len(runs)))
+		}
 		addToTaskCache(ctx, r.db, getTasksToAdd(taskCache, runs), taskCache)
 		for _, plannedRun := range runs {
 			task := taskCache[plannedRun.TaskID]
@@ -162,7 +165,7 @@ func safeSolve(
 	return solution, explanation, err
 }
 
-func (r Runner) runWorker(
+func (r algorithmRunner) runWorker(
 	ctx context.Context,
 	task database.Task,
 	algorithm algorithms.IAlgorithm,

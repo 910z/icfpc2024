@@ -26,11 +26,13 @@ func main() {
 
 	ctx := context.Background()
 
-	slog.SetDefault(logs.New())
-
 	connStr := os.Getenv("DATABASE_URL")
-	if connStr == "" { // в тесте
+	isDevEnv := connStr == ""
+	if isDevEnv {
+		slog.SetDefault(logs.New(slog.LevelDebug))
 		connStr = "postgresql://postgres:password@localhost/postgres?sslmode=disable"
+	} else {
+		slog.SetDefault(logs.New(slog.LevelInfo))
 	}
 
 	db, err := database.SetUp(ctx, connStr)

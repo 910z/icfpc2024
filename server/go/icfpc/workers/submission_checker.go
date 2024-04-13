@@ -5,7 +5,9 @@ import (
 	"errors"
 	"icfpc/database"
 	"icfpc/integration"
+	"icfpc/logs"
 	"log/slog"
+	"reflect"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -27,7 +29,7 @@ func (s submissionChecker) Run(
 	ctx context.Context,
 	fetch func(context.Context, []database.RunResult) (integration.CheckedSubmissions, error),
 ) error {
-	return runPeriodical(ctx, time.Second, make(chan struct{}), func() error {
+	return runPeriodical(logs.WithType(ctx, reflect.TypeOf(s)), time.Second, make(chan struct{}), func() error {
 		var pending []database.RunResult
 		q := s.db.NewSelect().
 			Model(&pending).

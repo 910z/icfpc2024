@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"icfpc/database"
 	"icfpc/integration"
+	"icfpc/logs"
 	"log/slog"
+	"reflect"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -25,7 +27,7 @@ func (t tasksFetcher) Run(
 	ctx context.Context,
 	getTasks func() ([]database.Task, error),
 ) error {
-	return runPeriodical(ctx, time.Second, t.bus.algorithmFinish, func() error {
+	fetchTasks := func() error {
 		tasks, err := getTasks()
 
 		if errors.Is(err, integration.Error) {
@@ -45,7 +47,8 @@ func (t tasksFetcher) Run(
 		}
 
 		return nil
-	})
+	}
+	return runPeriodical(logs.WithType(ctx, reflect.TypeOf(t)), time.Second, make(chan struct{}), fetchTasks)
 }
 
 func (t tasksFetcher) saveTasks(ctx context.Context, tasks []database.Task) error {

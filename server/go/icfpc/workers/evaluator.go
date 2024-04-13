@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
+	"reflect"
 	"time"
 
 	"icfpc/database"
@@ -21,12 +22,13 @@ type evaluator struct {
 
 func NewSolutionEvaluator(db *bun.DB, bus bus) *evaluator {
 	return &evaluator{
-		db: db,
+		db:  db,
+		bus: bus,
 	}
 }
 
 func (e evaluator) Run(ctx context.Context) error {
-	return runPeriodical(ctx, time.Second, e.bus.algorithmFinish, func() error {
+	return runPeriodical(logs.WithType(ctx, reflect.TypeOf(e)), time.Second, e.bus.algorithmFinish, func() error {
 		return e.evalEverythingPresent(ctx)
 	})
 }

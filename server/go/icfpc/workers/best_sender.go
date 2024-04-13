@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"reflect"
 	"time"
 
 	"icfpc/database"
@@ -50,7 +51,7 @@ func (b bestSender) Run(
 	ord SortOrder,
 	send func(context.Context, string, database.Solution) (string, error),
 ) error {
-	return runPeriodical(ctx, time.Second, b.bus.solutionEvaluated, func() error {
+	return runPeriodical(logs.WithType(ctx, reflect.TypeOf(b)), time.Second, b.bus.solutionEvaluated, func() error {
 		var best []fullResult
 		err := b.db.NewRaw(fmt.Sprintf(`with cte as (
 			select
