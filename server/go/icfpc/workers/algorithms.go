@@ -13,14 +13,16 @@ import (
 	"github.com/uptrace/bun"
 )
 
-func NewAlgorithmRunner(db *bun.DB) *Runner {
+func NewAlgorithmRunner(db *bun.DB, bus bus) *Runner {
 	return &Runner{
-		db: db,
+		db:  db,
+		bus: bus,
 	}
 }
 
 type Runner struct {
-	db *bun.DB
+	db  *bun.DB
+	bus bus
 }
 
 type algorithmData struct {
@@ -100,7 +102,7 @@ func getAlgorithm(algs []algorithms.IAlgorithm, name string, version string) alg
 func (r Runner) Run(ctx context.Context, algs []algorithms.IAlgorithm) error {
 	taskCache := make(map[int64]database.Task)
 
-	return runPeriodical(ctx, time.Second, func() error {
+	return runPeriodical(ctx, time.Second, r.bus.tasksAdded, func() error {
 		runs, err := r.planRuns(ctx, algs)
 		if err != nil {
 			return err
@@ -202,4 +204,6 @@ func (r Runner) runWorker(
 	if err := database.UpdateEnsured(ctx, updateQuery); err != nil {
 		handleError(err)
 	}
+
+	r.bus.onAlgorithmFinish(runResult)
 }

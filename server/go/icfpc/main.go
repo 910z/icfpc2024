@@ -42,11 +42,12 @@ func main() {
 		_ = db.Close()
 	}()
 
-	algoRunner := workers.NewAlgorithmRunner(db)
-	taskFetcher := workers.NewTasksFetcher(db)
-	solutionEvaluator := workers.NewSolutionEvaluator(db)
-	bestSender := workers.NewBestSender(db)
-	checker := workers.NewSubmissionChecker(db)
+	bus := workers.NewBus()
+	algoRunner := workers.NewAlgorithmRunner(db, bus)
+	taskFetcher := workers.NewTasksFetcher(db, bus)
+	solutionEvaluator := workers.NewSolutionEvaluator(db, bus)
+	bestSender := workers.NewBestSender(db, bus)
+	checker := workers.NewSubmissionChecker(db, bus)
 
 	go func() {
 		if err := checker.Run(ctx, integration.GetSubmissionsStatus); err != nil {

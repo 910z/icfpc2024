@@ -15,28 +15,20 @@ import (
 )
 
 type evaluator struct {
-	db *bun.DB
+	db  *bun.DB
+	bus bus
 }
 
-func NewSolutionEvaluator(db *bun.DB) *evaluator {
+func NewSolutionEvaluator(db *bun.DB, bus bus) *evaluator {
 	return &evaluator{
 		db: db,
 	}
 }
 
 func (e evaluator) Run(ctx context.Context) error {
-	ticker := time.NewTicker(time.Second)
-
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-ticker.C:
-			if err := e.evalEverythingPresent(ctx); err != nil {
-				return err
-			}
-		}
-	}
+	return runPeriodical(ctx, time.Second, e.bus.algorithmFinish, func() error {
+		return e.evalEverythingPresent(ctx)
+	})
 }
 
 func (e evaluator) evalEverythingPresent(ctx context.Context) error {
@@ -120,4 +112,5 @@ func (e evaluator) runEval(ctx context.Context, runRes *database.RunResult, runE
 		handleError(err)
 		return
 	}
+	e.bus.onSolutionEvaluated(runEvalRes)
 }

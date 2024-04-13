@@ -16,12 +16,14 @@ import (
 )
 
 type bestSender struct {
-	db *bun.DB
+	db  *bun.DB
+	bus bus
 }
 
-func NewBestSender(db *bun.DB) *bestSender {
+func NewBestSender(db *bun.DB, bus bus) *bestSender {
 	return &bestSender{
-		db: db,
+		db:  db,
+		bus: bus,
 	}
 }
 
@@ -48,7 +50,7 @@ func (b bestSender) Run(
 	ord SortOrder,
 	send func(context.Context, string, database.Solution) (string, error),
 ) error {
-	return runPeriodical(ctx, time.Second, func() error {
+	return runPeriodical(ctx, time.Second, b.bus.solutionEvaluated, func() error {
 		var best []fullResult
 		err := b.db.NewRaw(fmt.Sprintf(`with cte as (
 			select

@@ -12,12 +12,14 @@ import (
 )
 
 type submissionChecker struct {
-	db *bun.DB
+	db  *bun.DB
+	bus bus
 }
 
-func NewSubmissionChecker(db *bun.DB) *submissionChecker {
+func NewSubmissionChecker(db *bun.DB, bus bus) *submissionChecker {
 	return &submissionChecker{
-		db: db,
+		db:  db,
+		bus: bus,
 	}
 }
 
@@ -25,7 +27,7 @@ func (s submissionChecker) Run(
 	ctx context.Context,
 	fetch func(context.Context, []database.RunResult) (integration.CheckedSubmissions, error),
 ) error {
-	return runPeriodical(ctx, time.Second, func() error {
+	return runPeriodical(ctx, time.Second, make(chan struct{}), func() error {
 		var pending []database.RunResult
 		q := s.db.NewSelect().
 			Model(&pending).
