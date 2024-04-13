@@ -41,10 +41,14 @@ services:
   redis:
     image: redis:5.0-alpine
     restart: always
+    volumes:
+      - 'redis:/data'
   postgres:
     image: postgres:9.6-alpine
     env_file: redash.env
     restart: always
+    volumes:
+      - 'pg:/var/lib/postgresql/data'
   nginx:
     image: redash/nginx:latest
     ports:
@@ -54,3 +58,7 @@ services:
     links:
       - server:redash
     restart: always
+
+volumes:
+  pg:
+  redis:
