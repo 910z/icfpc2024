@@ -20,19 +20,21 @@ func NewTasksFetcher(db *bun.DB) *TasksFetcher {
 	return &TasksFetcher{db: db}
 }
 
-func (t *TasksFetcher) isRetriable(err error) bool {
-	return errors.Is(err, integration.Error)
-}
-
 func (t *TasksFetcher) Run(
 	ctx context.Context,
 	getTasks func() ([]database.Task, error),
 ) error {
-	handleTasks := func() error {
+	return runPeriodical(ctx, time.Second, func() error {
 		tasks, err := getTasks()
+
+		if errors.Is(err, integration.Error) {
+			slog.WarnContext(ctx, "can't save tasks, retrying", slog.Any("error", err))
+			return nil
+		}
+
 		if err != nil {
 			slog.ErrorContext(ctx, "failed to fetch tasks", slog.Any("error", err))
-			return err // тут не валимся, потому что ошибку от апи icfpc ретраим
+			return err
 		}
 
 		err = t.saveTasks(ctx, tasks)
@@ -40,28 +42,9 @@ func (t *TasksFetcher) Run(
 			slog.ErrorContext(ctx, "failed to save tasks", slog.Any("error", err))
 			return err
 		}
+
 		return nil
-	}
-
-	err := handleTasks()
-	if err != nil && !t.isRetriable(err) {
-		return err
-	}
-
-	ticker := time.NewTicker(time.Second * 2)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case <-ticker.C:
-			err := handleTasks()
-			if err != nil && !t.isRetriable(err) {
-				return err
-			}
-		}
-	}
+	})
 }
 
 func (t *TasksFetcher) saveTasks(ctx context.Context, tasks []database.Task) error {

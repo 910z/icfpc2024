@@ -2,6 +2,7 @@ package workers
 
 import (
 	"context"
+	"errors"
 	"icfpc/database"
 	"icfpc/integration"
 	"log/slog"
@@ -34,7 +35,7 @@ func (s submissionChecker) Run(
 			return err
 		}
 		fetched, err := fetch(ctx, pending)
-		if err == integration.Error {
+		if errors.Is(err, integration.Error) {
 			slog.WarnContext(ctx, "can't fetch submissions, retrying", slog.Any("error", err))
 			return nil
 		}

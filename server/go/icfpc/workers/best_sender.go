@@ -103,7 +103,7 @@ func (b bestSender) Run(
 			slog.InfoContext(runCtx, "sending best", slog.Any("score", best[i].Score))
 			token, err := send(runCtx, best[i].TaskExternalId, best[i].Solution)
 			if errors.Is(err, integration.Error) {
-				// ошибки в апишке ретраим
+				slog.WarnContext(ctx, "can't send, will retry next time", slog.Any("error", err))
 				continue
 			}
 			if err != nil {
