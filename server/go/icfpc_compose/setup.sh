@@ -101,4 +101,10 @@ create_directories
 SECRET_ENV_PATH="$ICFPC_BASE_PATH"/secret.env
 echo Creating secrets in $SECRET_ENV_PATH
 create_env
-docker compose --env-file $SECRET_ENV_PATH --project-name $ENV_NAME up --build
+
+detach=()
+if [ "$ENV_NAME" = "prod" ]; then
+   detach+=(--detach)
+fi
+
+docker compose --env-file $SECRET_ENV_PATH --project-name $ENV_NAME up --build "${detach[@]}"
