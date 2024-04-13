@@ -4,10 +4,10 @@ import {Problem} from "../types";
 
 export function get(url: string) {
     console.log(`get from ${url}`);
-    return fetch(url).then((res) => res.json());
+    return fetch(domain + url).then((res) => res.json());
 }
 
-export const domain = "localhost:8080"
+export const domain = process.env.API_URL || 'http://localhost:8080'
 
 export const Problems: React.FC = () => {
     const [problems, setProblems] = useState([] as Problem[]);
@@ -16,51 +16,15 @@ export const Problems: React.FC = () => {
 
     function upd() {
         console.log("upd")
-        get(`http://${domain}/api/problems`)
+        get(`/api/problems`)
             .then(data => {
-                if (data != problems) {
+                if (data !== problems) {
                     setProblems(data);
                 }
             });
-        // get("http://localhost:8080/api/solution/best")
-        //     .then(data => {
-        //         if (data != bestSolutions) {
-        //             setBestSolutions(data)
-        //         }
-        //     });
     }
 
-    //
-    // upd();
-
     setTimeout(upd, 5000);
-
-    // setInterval(upd, 5000);
-
-    // useEffect(() => {
-    //     document.
-    //     if (darkMode) {
-    //         document.documentElement.removeAttribute("data-bs-theme");
-    //     } else {
-    //         document.documentElement.setAttribute("data-bs-theme", "dark");
-    //     }
-    // }, [problems]);
-
-    // const root = ReactDOM.createRoot(
-    //     document.getElementById('root')
-    // );
-    //
-    // function tick() {
-    //     const element = (
-    //         <div>
-    //             <h1>Hello, world!</h1>
-    //             <h2>It is {new Date().toLocaleTimeString()}.</h2>
-    //         </div>
-    //     );
-    //     root.render(element);
-    // }
-    //
-    // setInterval(tick, 1000);
 
     return <Table striped bordered hover>
         <thead>
@@ -82,10 +46,9 @@ export const Problems: React.FC = () => {
                 <td>{id}</td>
                 <td>{
                     bestSolution != null
-                        ? <img src={`http://${domain}/preview/${bestSolution.id}?imgSize=200`}/>
+                        ? <img src={`${domain}/preview/${bestSolution.id}?imgSize=200`} alt={`${id}`}/>
                         : <p>Nope</p>
                 }</td>
-                {/*<td>{contentId}</td>*/}
                 <td>{bestSolution?.score ?? 0}</td>
                 <td>{bestSolution?.tags ?? []}</td>
             </tr>
