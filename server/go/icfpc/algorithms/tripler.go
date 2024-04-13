@@ -1,6 +1,7 @@
 package algorithms
 
 import (
+	"context"
 	"icfpc/database"
 )
 
@@ -12,6 +13,6 @@ func (t Tripler) Version() string {
 	return "1.0.0"
 }
 
-func (t Tripler) Solve(task database.Task) (Solution, Explanation, error) {
-	return Solution{Data: task.Data * 3}, nil, nil
+func (t Tripler) Solve(_ context.Context, task database.Task) (database.Solution, database.SolutionExplanation, error) {
+	return database.Solution{Data: task.Data * 3}, nil, nil
 }

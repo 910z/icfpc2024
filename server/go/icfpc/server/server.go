@@ -3,7 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
@@ -23,16 +23,13 @@ type Server struct {
 }
 
 func (s *Server) SetupEndpoints() {
-	http.Handle("/", &app.Handler{
-		Name:        "Hello",
-		Description: "An Hello World! example",
-	})
+	http.Handle("/", &app.Handler{})
 
 	http.HandleFunc("/list", s.handleList)
 }
 
 func (s *Server) Run() error {
-	log.Printf("Server listening on port %d...\n", s.port)
+	slog.Info("Server listening", slog.Int("port", s.port))
 
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), nil); err != nil {
 		return err

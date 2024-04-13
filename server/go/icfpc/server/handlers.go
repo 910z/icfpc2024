@@ -3,7 +3,8 @@ package server
 import (
 	"context"
 	"icfpc/database"
-	"log"
+	"icfpc/evaluation"
+	"log/slog"
 	"net/http"
 	"strconv"
 )
@@ -29,24 +30,32 @@ func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
 	writeJson(w, page)
 }
 
-func (s *Server) getPage(ctx context.Context, skip int, take int) ([]database.RunResult, error) {
-	log.Println("querying list...")
-
-	var results []database.RunResult
+func (s *Server) getPage(ctx context.Context, skip int, take int) ([]database.RunEvalResult, error) {
+	slog.DebugContext(ctx, "querying list...")
+	var results []database.RunEvalResult
 
 	err := s.db.NewSelect().
 		Model(&results).
+		Relation("RunResult.Task").
+		Relation("RunResult").
+		Where("version = ?", evaluation.Version).
 		OrderExpr("task_id ASC").
 		Limit(take).
 		Offset(skip).
 		Scan(ctx)
-	if err != nil {
-		log.Printf("error querying list: %s", err.Error())
 
+	for i := range results { // чтоб не лагал фронт. не селектить их через ExcludeColumn легко не получится
+		var zeroData database.TaskData
+		var zeroSolution database.Solution
+		results[i].RunResult.Task.Data = zeroData
+		results[i].RunResult.Solution = zeroSolution
+	}
+
+	if err != nil {
+		slog.ErrorContext(ctx, "failed to query list", slog.Any("error", err))
 		return nil, err
 	}
 
-	log.Println("queried list")
-
+	slog.DebugContext(ctx, "queried list")
 	return results, nil
 }

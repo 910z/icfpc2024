@@ -3,22 +3,17 @@ package main
 import (
 	"context"
 	"icfpc/database"
-	"icfpc/evaluation"
 	"icfpc/front"
-	"icfpc/runner"
+	"icfpc/integration"
+	"icfpc/logs"
 	"icfpc/server"
+	"icfpc/workers"
+	"log/slog"
 	_ "net/http/pprof"
 	"os"
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
-
-// TODO: what is this?
-type RunEvalResult struct {
-	evaluation.Result
-
-	RunResult database.RunResult `bun:"rel:belongs-to,join:run_result_id=id"`
-}
 
 func main() {
 	app.Route("/", &front.RunList{})
@@ -30,6 +25,8 @@ func main() {
 	}
 
 	ctx := context.Background()
+
+	slog.SetDefault(logs.New())
 
 	connStr := os.Getenv("DATABASE_URL")
 	if connStr == "" { // в тесте
@@ -45,10 +42,38 @@ func main() {
 		_ = db.Close()
 	}()
 
-	algoRunner := runner.New(db)
+	algoRunner := workers.NewAlgorithmRunner(db)
+	taskFetcher := workers.NewTasksFetcher(db)
+	solutionEvaluator := workers.NewSolutionEvaluator(db)
+	bestSender := workers.NewBestSender(db)
+	checker := workers.NewSubmissionChecker(db)
 
 	go func() {
-		if err := algoRunner.Run(ctx, runner.AllTasks, runner.AllAlgorithms); err != nil {
+		if err := checker.Run(ctx, integration.GetSubmissionsStatus); err != nil {
+			panic(err)
+		}
+	}()
+
+	go func() {
+		if err := bestSender.Run(ctx, workers.SortOrderDesc, integration.SendSolution); err != nil {
+			panic(err)
+		}
+	}()
+
+	go func() {
+		if err := algoRunner.Run(ctx, workers.AllAlgorithms); err != nil {
+			panic(err)
+		}
+	}()
+
+	go func() {
+		if err := taskFetcher.Run(ctx, integration.GetTasks); err != nil {
+			panic(err)
+		}
+	}()
+
+	go func() {
+		if err := solutionEvaluator.Run(ctx); err != nil {
 			panic(err)
 		}
 	}()

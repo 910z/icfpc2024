@@ -3,7 +3,8 @@ package database
 import (
 	"context"
 	"database/sql"
-	"log"
+	"fmt"
+	"log/slog"
 	"os"
 	"time"
 
@@ -13,11 +14,23 @@ import (
 	"github.com/uptrace/bun/extra/bundebug"
 )
 
+func waitForConnection(ctx context.Context, db *bun.DB) {
+	for {
+		err := db.PingContext(ctx)
+		if err == nil {
+			slog.InfoContext(ctx, "connected to db")
+			break
+		} else {
+			slog.WarnContext(ctx, "can't connect, retrying in 1 sec", slog.Any("error", err))
+			time.Sleep(time.Second)
+		}
+	}
+}
+
 func SetUp(ctx context.Context, connStr string) (*bun.DB, error) {
 	db := bun.NewDB(sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(connStr))), pgdialect.New())
 
 	db.AddQueryHook(bundebug.NewQueryHook(
-		// bundebug.WithVerbose(true),
 		bundebug.FromEnv("BUNDEBUG"),
 	))
 
@@ -27,12 +40,10 @@ func SetUp(ctx context.Context, connStr string) (*bun.DB, error) {
 		}
 	}
 
-	err := createSchema(ctx, db)
-	for err != nil {
-		log.Printf("can't connect, retrying in 1 sec: %s\n", err.Error())
-		time.Sleep(time.Second)
+	waitForConnection(ctx, db)
 
-		err = createSchema(ctx, db)
+	if err := createSchema(ctx, db); err != nil {
+		return nil, err
 	}
 
 	return db, nil
@@ -56,4 +67,24 @@ func dropTables(ctx context.Context, db *bun.DB) error {
 	}
 
 	return nil
+}
+
+func ensureRows(res sql.Result) error {
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return fmt.Errorf("no rows affected")
+	}
+	return nil
+}
+
+func UpdateEnsured(ctx context.Context, q *bun.UpdateQuery) error {
+	res, err := q.Exec(ctx)
+	if err != nil {
+		return err
+	}
+
+	return ensureRows(res)
 }

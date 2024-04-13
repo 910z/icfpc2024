@@ -1,18 +1,13 @@
 package algorithms
 
 import (
+	"context"
 	"icfpc/database"
 )
 
-type (
-	Solution struct {
-		Data int
-	}
-
-	Explanation any
-)
+type ()
 
 type IAlgorithm interface {
 	Version() string
-	Solve(database.Task) (Solution, Explanation, error)
+	Solve(context.Context, database.Task) (database.Solution, database.SolutionExplanation, error)
 }
