@@ -16,4 +16,5 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build the Docker image
       working-directory: ./server/go/icfpc_compose
-      run: docker compose up -d
+      run: |
+        HOST_PORT=8081 docker compose up -d --build --no-deps -p icfpc-prod
