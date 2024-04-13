@@ -17,4 +17,4 @@ jobs:
     - name: Build the Docker image
       working-directory: ./server/go/icfpc_compose
       run: |
-        ./setup.sh --prod
+        ./setup.sh --prod --overwrite-db

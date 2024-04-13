@@ -1,13 +1,19 @@
-OVERWRITE=no
+OVERWRITE_ENV=no
+OVERWRITE_DB=no
 ENV_NAME=dev
-opts="$(getopt -o oph -l overwrite,help,prod --name "$0" -- "$@")"
+opts="$(getopt -o oph -l overwrite,help,prod,overwrite-db --name "$0" -- "$@")"
 eval set -- "$opts"
 
 while true
 do
   case "$1" in
     -o|--overwrite)
-      OVERWRITE=yes
+      OVERWRITE_ENV=yes
+      OVERWRITE_DB=yes
+      shift
+      ;;
+    -o|--overwrite-db)
+      OVERWRITE_DB=yes
       shift
       ;;
     --prod)
@@ -17,6 +23,7 @@ do
     -h|--help)
       echo " ICFPC setup script usage: $0 [-o|--overwrite] [--prod]"
       echo "  The --overwrite option replaces any existing configuration with a fresh new install"
+      echo "  The --overwrite-db option purges only db state, leaving environment file intact"
       exit 1
       ;;
     --)
@@ -39,7 +46,7 @@ create_env() {
   if [ -e $SECRET_ENV_PATH ]; then
     # There's already an environment file
 
-    if [ "x$OVERWRITE" = "xno" ]; then
+    if [ "x$OVERWRITE_ENV" = "xno" ]; then
       echo
       echo "Environment file already exists, reusing that one + and adding any missing (mandatory) values"
 
@@ -75,7 +82,7 @@ create_directories() {
   if [ -e "$ICFPC_BASE_PATH"/postgres-data ]; then
     # PostgreSQL database directory seems to exist already
 
-    if [ "x$OVERWRITE" = "xyes" ]; then
+    if [ "x$OVERWRITE_DB" = "xyes" ]; then
       # We've been asked to overwrite the existing database, so delete the old one
       echo "Shutting down any running ICFPC instance"
       if [ -e "$ICFPC_BASE_PATH"/compose.yaml ]; then
