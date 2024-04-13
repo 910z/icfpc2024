@@ -17,4 +17,4 @@ jobs:
     - name: Build the Docker image
       working-directory: ./server/go/icfpc_compose
       run: |
-        HOST_PORT=8081 docker compose -p icfpc-prod up -d --build --no-deps
+        ./setup.sh --prod
