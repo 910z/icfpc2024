@@ -46,7 +46,7 @@ class CalcScoringService {
                 influences[musInd] += influence
             }
         }
-        return influences;
+        return influences
 
     }
 

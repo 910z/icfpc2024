@@ -9,5 +9,5 @@ import org.springframework.boot.web.servlet.ServletComponentScan
 class IcfpcApplication
 
 fun main(args: Array<String>) {
-	runApplication<IcfpcApplication>(*args)
+    runApplication<IcfpcApplication>(*args)
 }
