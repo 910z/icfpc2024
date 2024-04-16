@@ -3,16 +3,11 @@ import {Table} from "react-bootstrap";
 import {Problem} from "../types";
 
 export function get(url: string) {
-    console.log(`get from ${url}`);
-    return fetch(domain + url).then((res) => res.json());
+    return fetch(url).then((res) => res.json());
 }
-
-export const domain = process.env.API_URL || 'http://localhost:8080'
 
 export const Problems: React.FC = () => {
     const [problems, setProblems] = useState([] as Problem[]);
-
-    // const [bestSolutions, setBestSolutions]= useState({});
 
     function upd() {
         console.log("upd")
@@ -46,7 +41,7 @@ export const Problems: React.FC = () => {
                 <td>{id}</td>
                 <td>{
                     bestSolution != null
-                        ? <img src={`${domain}/preview/${bestSolution.id}?imgSize=200`} alt={`${id}`}/>
+                        ? <img src={`/preview/${bestSolution.id}?imgSize=200`} alt={`${id}`}/>
                         : <p>Nope</p>
                 }</td>
                 <td>{bestSolution?.score ?? 0}</td>
