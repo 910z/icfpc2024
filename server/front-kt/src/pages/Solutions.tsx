@@ -22,13 +22,14 @@ export const Solutions: React.FC = () => {
         <tr>
             <th>#</th>
             <th>Preview</th>
-            <th>Instrs</th>
-            <th>Musicns</th>
-            <th>Attends</th>
-            <th>Tastes</th>
-            <th>Pillars</th>
-            <th>Stage Size</th>
+            {/*<th>Instrs</th>*/}
+            {/*<th>Musicns</th>*/}
+            {/*<th>Attends</th>*/}
+            {/*<th>Tastes</th>*/}
+            {/*<th>Pillars</th>*/}
+            {/*<th>Stage Size</th>*/}
             <th>Score</th>
+            <th>Version</th>
         </tr>
         </thead>
         <tbody>
