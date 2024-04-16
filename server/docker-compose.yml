@@ -17,6 +17,8 @@ services:
       - 8008:8080
     networks:
       - icfpc
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-'postgresql://postgres:password@localhost/postgres?sslmode=disable'}
 
 networks:
   icfpc:
