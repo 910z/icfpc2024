@@ -1,6 +1,6 @@
 version: '3.9'
 services:
-  server:
+  kotlin:
     image: icfpc-kotlin
     ports:
       - 8000:8080
@@ -10,6 +10,13 @@ services:
       - spring.datasource.url=${PG_DATABASE:-'jdbc:postgresql://postgres:5432/icfpc'}
       - spring.datasource.username=${PG_USERNAME:-icfpc}
       - spring.datasource.password=${PG_PASSWORD:-icfpc}
+
+  go:
+    image: icfpc-go
+    ports:
+      - 8008:8080
+    networks:
+      - icfpc
 
 networks:
   icfpc:
