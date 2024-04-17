@@ -99,8 +99,6 @@ class PreviewController(
                     task.stage_bottom_left[1] + task.stage_height / 2
                 )
 
-                val width = "${imgSize ?: 1000}"
-                val height = "${imgSize ?: 1000}"
                 val svg = ImageDrawSVG(imgSize ?: 1000, center, iSize) {
                     fillRect(
                         Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
@@ -108,12 +106,6 @@ class PreviewController(
                         task.stage_height,
                         Color.LIGHT_GRAY
                     )
-//                        drawRect(
-//                            Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
-//                            task.stage_width,
-//                            task.stage_height,
-//                            Color.BLACK
-//                        )
 
                     solve.placements.forEachIndexed { index, it ->
                         val color = Color.getHSBColor(
@@ -135,82 +127,12 @@ class PreviewController(
                     }
                 }
 
-
-//                    style {
-//                        body = """
-//                            svg .circle { stroke: black }
-//                        """.trimIndent()
-//                    }
-//                    rect {
-//                        x = "${task.stage_bottom_left[0]}"
-//                        y = "${task.stage_bottom_left[1]}"
-//                        width = "${task.stage_width}"
-//                        height = "${task.stage_width}"
-//                        fill = "blue"
-//                    }
-//                    solve.placements.forEachIndexed { index, it ->
-//                        val color = Color.getHSBColor(
-//                            task.musicians[index].toFloat() / task.musicians.max(),
-//                            0.5F,
-//                            0.5F
-//                        )
-//                        circle {
-//                            cx = "${it.x}"
-//                            cy = "${it.y}"
-//                            r = "5"
-//                            val buf = Integer.toHexString(color.rgb)
-//                            fill = "#" + buf.substring(buf.length - 6)
-//                        }
-//                    }
-
-//                "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n$svg".toByteArray()
-
-                FileWriter("temp.svg").use {
-                    svg.render(it, RenderMode.FILE)
+                synchronized(DIR) {
+                    FileWriter("temp.svg").use {
+                        svg.render(it, RenderMode.FILE)
+                    }
+                    File("temp.svg").readBytes()
                 }
-
-//                val image = ImageDrawSVG(imgSize ?: 1000, center, iSize) {
-//                    color = Color.LIGHT_GRAY
-//                    fillRect(
-//                        Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
-//                        task.stage_width,
-//                        task.stage_height,
-//                    )
-//                    color = Color.BLACK
-//                    drawRect(
-//                        Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
-//                        task.stage_width,
-//                        task.stage_height,
-//                    )
-//
-//                    solve.placements.forEachIndexed { index, it ->
-//                        color = Color.getHSBColor(
-//                            task.musicians[index].toFloat() / task.musicians.max(),
-//                            0.5F,
-//                            0.5F
-//                        )
-//                        fillCircle(it, 5.0)
-//                    }
-//
-//                    color = Color.LIGHT_GRAY
-//
-//                    task.pillars.forEach { pillar ->
-//                        fillCircle(Point(pillar.center[0], pillar.center[1]), pillar.radius)
-//                    }
-//
-//                    color = Color(0xFF, 0xFD, 0xD0)
-//
-//                    task.attendees.forEach { attendee ->
-//                        fillCircle(Point(attendee.x, attendee.y), 5.0)
-//                    }
-//                }
-
-                File("temp.svg").readBytes()
-
-
-//                val baos = ByteArrayOutputStream()
-//                ImageIO.write(image, "PNG", baos)
-//                baos.toByteArray()
             }
         }
         return ResponseEntity.ok()
@@ -304,6 +226,17 @@ data class ImageDrawSVG(val size: Int, val center: Point, val scale: Double, val
     companion object {
         operator fun invoke(size: Int, center: Point, scale: Double, draw: ImageDrawSVG.() -> Unit): SVG {
             return SVG.svg(true) {
+                val p0 = Point(-size.toDouble(), -size.toDouble()) * scale / size / 2 + center
+                val p1 = Point(size.toDouble(), size.toDouble()) * scale / size / 2 + center
+                viewBox = "$p0 ${p1 - p0}"
+//                val iSize = max(task.stage_width, task.stage_height) * 1.05
+//                val center = Point(
+//                    task.stage_bottom_left[0] + task.stage_width / 2,
+//                    task.stage_bottom_left[1] + task.stage_height / 2
+//                )
+//                fun convert(p: Point) = ((p - center) * size.toDouble() / scale) + Point(size.toDouble() / 2, size.toDouble() / 2)
+//                fun convert(d: Double) = d * size.toDouble() / scale
+//                x * scale  = d * size.toDouble() / scale
                 val svg = this
                 val drawI = ImageDrawSVG(size, center, scale, svg)
                 drawI.draw()
@@ -328,9 +261,11 @@ data class ImageDrawSVG(val size: Int, val center: Point, val scale: Double, val
 //        val shape = Ellipse2D.Double(a.x - rd, a.y - rd, rd * 2, rd * 2)
         if (a.x <= size + rd && a.y <= size + rd && a.x >= -rd && a.y >= -rd) {
             svg.circle {
-                cx = "${a.x}"
-                cy = "${a.y}"
-                this.r = "$rd"
+//                cx = "${a.x}"
+//                cy = "${a.y}"
+                cx = "${p.x}"
+                cy = "${p.y}"
+                this.r = "$r"
                 fill = convert(color)
             }
         }
@@ -341,10 +276,10 @@ data class ImageDrawSVG(val size: Int, val center: Point, val scale: Double, val
     fun fillRect(from: Point, width: Double, height: Double, color: Color) {
         val a = convert(from)
         svg.rect {
-            x = "${a.x.toInt()}"
-            y = "${a.y.toInt()}"
-            this.width = "${convert(width).toInt()}"
-            this.height = "${convert(height).toInt()}"
+            x = "${from.x}"
+            y = "${from.y}"
+            this.width = "${width}"
+            this.height = "${height}"
             fill = convert(color)
         }
 //        g2d.fillRect(a.x.toInt(), a.y.toInt(), convert(width).toInt(), convert(height).toInt())

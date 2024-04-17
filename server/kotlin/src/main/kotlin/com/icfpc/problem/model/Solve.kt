@@ -34,6 +34,8 @@ data class Point(
 
     operator fun div(d: Double) = Point(x / d, y / d)
 
+    operator fun div(d: Int) = Point(x / d, y / d)
+
     infix fun scalar(p: Point) = p.x * x + p.y * y
 
     infix fun dist(p: Point) = sqrt((this - p).sqrSize())
@@ -41,6 +43,8 @@ data class Point(
     fun sqrSize() = x * x + y * y
 
     fun norm() = this / sqrt(sqrSize())
+
+    override fun toString(): String = "$x $y"
 }
 
 fun Solution.getContent(contentRepository: ContentRepository) =
