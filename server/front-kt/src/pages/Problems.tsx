@@ -42,7 +42,7 @@ export const Problems: React.FC = () => {
                 <td>{id}</td>
                 <td>{
                     bestSolution != null
-                        ? <img src={`/preview/${bestSolution.id}?imgSize=200`} alt={`${id}`}/>
+                        ? <img src={`/preview/${bestSolution.id}?imgSize=200`} alt={`${id}`} width="200" height="200"/>
                         : <p>Nope</p>
                 }</td>
                 <td>{bestSolution?.score ?? 0}</td>

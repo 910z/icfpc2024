@@ -36,7 +36,7 @@ export const Solutions: React.FC = () => {
         {solutions?.map(({id, problemId, score, tags}) => (
             <tr>
                 <td>{problemId}</td>
-                <td><img src={`/preview/${id}?imgSize=200`} alt={`${id}`}/></td>
+                <td><img src={`/preview/${id}?imgSize=200`} alt={`${id}`} width="200" height="200"/></td>
                 <td>{score ?? 0}</td>
                 <td>{tags ?? []}</td>
             </tr>

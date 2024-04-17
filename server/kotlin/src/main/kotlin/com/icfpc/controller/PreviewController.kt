@@ -1,5 +1,7 @@
 package com.icfpc.controller
 
+import com.github.nwillc.ksvg.RenderMode
+import com.github.nwillc.ksvg.elements.SVG
 import com.icfpc.db.repository.ContentRepository
 import com.icfpc.db.repository.ProblemRepository
 import com.icfpc.db.repository.SolutionRepository
@@ -19,6 +21,7 @@ import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileWriter
 import java.nio.file.Files
 import javax.imageio.ImageIO
 import kotlin.math.max
@@ -38,7 +41,7 @@ class PreviewController(
         response: HttpServletResponse
     ): ResponseEntity<ByteArray> {
         response.setHeader("Cache-Control", "max-age=60")
-        val res = cache("$id.$imgSize.$size") {
+        val res = cache("$id.$imgSize.$size.svg") {
             val solution = solutionRepository.getReferenceById(id)
             val problem = problemRepository.getReferenceById(solution.problemId)
             val task = problem.getContent(contentRepository)
@@ -95,54 +98,128 @@ class PreviewController(
                     task.stage_bottom_left[0] + task.stage_width / 2,
                     task.stage_bottom_left[1] + task.stage_height / 2
                 )
-                val image = ImageDraw(imgSize ?: 1000, center, iSize) {
-                    color = Color.LIGHT_GRAY
+
+                val width = "${imgSize ?: 1000}"
+                val height = "${imgSize ?: 1000}"
+                val svg = ImageDrawSVG(imgSize ?: 1000, center, iSize) {
                     fillRect(
                         Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
                         task.stage_width,
                         task.stage_height,
+                        Color.LIGHT_GRAY
                     )
-                    color = Color.BLACK
-                    drawRect(
-                        Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
-                        task.stage_width,
-                        task.stage_height,
-                    )
+//                        drawRect(
+//                            Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
+//                            task.stage_width,
+//                            task.stage_height,
+//                            Color.BLACK
+//                        )
 
                     solve.placements.forEachIndexed { index, it ->
-                        color = Color.getHSBColor(
+                        val color = Color.getHSBColor(
                             task.musicians[index].toFloat() / task.musicians.max(),
                             0.5F,
                             0.5F
                         )
-                        fillCircle(it, 5.0)
+                        fillCircle(it, 5.0, color)
                     }
-
-                    color = Color.LIGHT_GRAY
 
                     task.pillars.forEach { pillar ->
-                        fillCircle(Point(pillar.center[0], pillar.center[1]), pillar.radius)
+                        fillCircle(Point(pillar.center[0], pillar.center[1]), pillar.radius, Color.LIGHT_GRAY)
                     }
 
-                    color = Color(0xFF, 0xFD, 0xD0)
+                    val color = Color(0xFF, 0xFD, 0xD0)
 
                     task.attendees.forEach { attendee ->
-                        fillCircle(Point(attendee.x, attendee.y), 5.0)
+                        fillCircle(Point(attendee.x, attendee.y), 5.0, color)
                     }
                 }
 
-                val baos = ByteArrayOutputStream()
-                ImageIO.write(image, "PNG", baos)
-                baos.toByteArray()
+
+//                    style {
+//                        body = """
+//                            svg .circle { stroke: black }
+//                        """.trimIndent()
+//                    }
+//                    rect {
+//                        x = "${task.stage_bottom_left[0]}"
+//                        y = "${task.stage_bottom_left[1]}"
+//                        width = "${task.stage_width}"
+//                        height = "${task.stage_width}"
+//                        fill = "blue"
+//                    }
+//                    solve.placements.forEachIndexed { index, it ->
+//                        val color = Color.getHSBColor(
+//                            task.musicians[index].toFloat() / task.musicians.max(),
+//                            0.5F,
+//                            0.5F
+//                        )
+//                        circle {
+//                            cx = "${it.x}"
+//                            cy = "${it.y}"
+//                            r = "5"
+//                            val buf = Integer.toHexString(color.rgb)
+//                            fill = "#" + buf.substring(buf.length - 6)
+//                        }
+//                    }
+
+//                "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n$svg".toByteArray()
+
+                FileWriter("temp.svg").use {
+                    svg.render(it, RenderMode.FILE)
+                }
+
+//                val image = ImageDrawSVG(imgSize ?: 1000, center, iSize) {
+//                    color = Color.LIGHT_GRAY
+//                    fillRect(
+//                        Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
+//                        task.stage_width,
+//                        task.stage_height,
+//                    )
+//                    color = Color.BLACK
+//                    drawRect(
+//                        Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
+//                        task.stage_width,
+//                        task.stage_height,
+//                    )
+//
+//                    solve.placements.forEachIndexed { index, it ->
+//                        color = Color.getHSBColor(
+//                            task.musicians[index].toFloat() / task.musicians.max(),
+//                            0.5F,
+//                            0.5F
+//                        )
+//                        fillCircle(it, 5.0)
+//                    }
+//
+//                    color = Color.LIGHT_GRAY
+//
+//                    task.pillars.forEach { pillar ->
+//                        fillCircle(Point(pillar.center[0], pillar.center[1]), pillar.radius)
+//                    }
+//
+//                    color = Color(0xFF, 0xFD, 0xD0)
+//
+//                    task.attendees.forEach { attendee ->
+//                        fillCircle(Point(attendee.x, attendee.y), 5.0)
+//                    }
+//                }
+
+                File("temp.svg").readBytes()
+
+
+//                val baos = ByteArrayOutputStream()
+//                ImageIO.write(image, "PNG", baos)
+//                baos.toByteArray()
             }
         }
         return ResponseEntity.ok()
-            .contentType(MediaType.IMAGE_PNG)
+            .contentType(MediaType("image", "svg+xml"))
             .body(res)
     }
 
     fun cache(key: String, lambda: () -> ByteArray): ByteArray {
-        val file = File("$DIR/$key.png")
+        val file = File("$DIR/$key")
         if (!file.exists()) {
             file.parentFile.mkdirs()
             Files.write(file.toPath(), lambda())
@@ -206,4 +283,75 @@ data class ImageDraw(val size: Int, val center: Point, val scale: Double, val im
         val a = convert(from)
         g2d.drawRect(a.x.toInt(), a.y.toInt(), convert(width).toInt(), convert(height).toInt())
     }
+}
+
+data class ImageDrawSVG(val size: Int, val center: Point, val scale: Double, val svg: SVG) {
+//    var color: Color
+//        get() {
+//            TODO()
+//        }
+//        set(value) {
+//            g2d.color = value
+//        }
+
+    init {
+//        color = Color(255, 0, 255, 0)
+//        g2d.fillRect(0, 0, size, size)
+//        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+//        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
+    }
+
+    companion object {
+        operator fun invoke(size: Int, center: Point, scale: Double, draw: ImageDrawSVG.() -> Unit): SVG {
+            return SVG.svg(true) {
+                val svg = this
+                val drawI = ImageDrawSVG(size, center, scale, svg)
+                drawI.draw()
+            }
+        }
+    }
+
+    infix fun Point.pMul(a: Point) = Point(this.x * a.x, this.y * a.y)
+    infix fun Point.pDiv(a: Point) = Point(this.x / a.x, this.y / a.y)
+
+    fun convert(p: Point) = ((p - center) * size.toDouble() / scale) + Point(size.toDouble() / 2, size.toDouble() / 2)
+    fun convert(d: Double) = d * size.toDouble() / scale
+    fun convert(c: Color): String {
+        val buf = Integer.toHexString(c.rgb)
+        return "#" + buf.substring(buf.length - 6)
+    }
+
+    fun fillCircle(p: Point, r: Double, color: Color) {
+        val a = convert(p)
+        val rd = convert(r)
+
+//        val shape = Ellipse2D.Double(a.x - rd, a.y - rd, rd * 2, rd * 2)
+        if (a.x <= size + rd && a.y <= size + rd && a.x >= -rd && a.y >= -rd) {
+            svg.circle {
+                cx = "${a.x}"
+                cy = "${a.y}"
+                this.r = "$rd"
+                fill = convert(color)
+            }
+        }
+//        g2d.fill(shape)
+//        image.setRGB(a.x.toInt(), a.y.toInt(), g2d.color.rgb)
+    }
+
+    fun fillRect(from: Point, width: Double, height: Double, color: Color) {
+        val a = convert(from)
+        svg.rect {
+            x = "${a.x.toInt()}"
+            y = "${a.y.toInt()}"
+            this.width = "${convert(width).toInt()}"
+            this.height = "${convert(height).toInt()}"
+            fill = convert(color)
+        }
+//        g2d.fillRect(a.x.toInt(), a.y.toInt(), convert(width).toInt(), convert(height).toInt())
+    }
+
+//    fun SVG.drawRect(from: Point, width: Double, height: Double) {
+//        val a = convert(from)
+////        g2d.drawRect(a.x.toInt(), a.y.toInt(), convert(width).toInt(), convert(height).toInt())
+//    }
 }
