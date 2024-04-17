@@ -101,9 +101,9 @@ class PreviewController(
 
                 val svg = ImageDrawSVG(imgSize ?: 1000, center, iSize) {
                     fillRect(
-                        Point(task.stage_bottom_left[0], task.stage_bottom_left[1]),
-                        task.stage_width,
-                        task.stage_height,
+                        Point(task.stage_bottom_left[0] + 5, task.stage_bottom_left[1] + 5),
+                        task.stage_width - 10,
+                        task.stage_height - 10,
                         Color.LIGHT_GRAY
                     )
 
