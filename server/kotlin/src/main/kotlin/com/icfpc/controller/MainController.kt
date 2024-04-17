@@ -5,9 +5,9 @@ import com.icfpc.db.model.Content
 import com.icfpc.db.model.Problem
 import com.icfpc.db.repository.ContentRepository
 import com.icfpc.db.repository.ProblemRepository
-import com.icfpc.db.repository.SolutionRepository
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ResponseBody
 import java.io.File
 
 @Controller
@@ -16,9 +16,10 @@ class MainController(
     val contentRepository: ContentRepository
 ) {
     @GetMapping("/")
-    fun index(): String {
-        return "redirect:index.html"
-    }
+    @ResponseBody
+    fun index() = this::class.java
+        .getResourceAsStream("/static/index.html")!!
+        .readAllBytes()
 
     @GetMapping("/init")
     fun init(): String {
