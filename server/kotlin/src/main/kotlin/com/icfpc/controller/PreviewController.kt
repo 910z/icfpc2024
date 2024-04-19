@@ -6,6 +6,7 @@ import com.icfpc.db.repository.ContentRepository
 import com.icfpc.db.repository.ProblemRepository
 import com.icfpc.db.repository.SolutionRepository
 import com.icfpc.problem.model.Point
+import com.icfpc.problem.model.format
 import com.icfpc.problem.model.getContent
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.CacheControl
@@ -285,9 +286,9 @@ data class ImageDrawSVG(val size: Int, val center: Point, val scale: Double, val
             svg.circle {
 //                cx = "${a.x}"
 //                cy = "${a.y}"
-                cx = "${p.x}"
-                cy = "${p.y}"
-                this.r = "$r"
+                cx = format(p.x)
+                cy = format(p.y)
+                this.r = format(r)
                 this.cssClass = cssClass
             }
         }
@@ -298,10 +299,10 @@ data class ImageDrawSVG(val size: Int, val center: Point, val scale: Double, val
     fun fillRect(from: Point, width: Double, height: Double, color: Color) {
         val a = convert(from)
         svg.rect {
-            x = "${from.x}"
-            y = "${from.y}"
-            this.width = "${width}"
-            this.height = "${height}"
+            x = format(from.x)
+            y = format(from.y)
+            this.width = format(width)
+            this.height = format(height)
             fill = convert(color)
         }
 //        g2d.fillRect(a.x.toInt(), a.y.toInt(), convert(width).toInt(), convert(height).toInt())
