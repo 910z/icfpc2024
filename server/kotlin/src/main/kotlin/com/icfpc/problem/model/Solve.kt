@@ -48,7 +48,7 @@ data class Point(
 
     fun norm() = this / sqrt(sqrSize())
 
-    override fun toString(): String = "${format(x)} ${format(y)}"
+    override fun toString(): String = "${asString(x)} ${asString(y)}"
 }
 
 val df = DecimalFormat().apply {
@@ -58,7 +58,7 @@ val df = DecimalFormat().apply {
     decimalFormatSymbols = DecimalFormatSymbols(Locale.ENGLISH)
 }
 
-fun format(d: Double): String {
+fun asString(d: Double): String {
     return df.format(BigDecimal("$d"))
 }
 
