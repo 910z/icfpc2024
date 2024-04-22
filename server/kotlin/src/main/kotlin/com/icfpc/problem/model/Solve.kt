@@ -5,6 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.icfpc.db.model.Solution
 import com.icfpc.db.repository.ContentRepository
 import com.icfpc.utils.Json
+import java.math.BigDecimal
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.util.*
 import kotlin.math.sqrt
 
 data class Solve(
@@ -44,7 +48,18 @@ data class Point(
 
     fun norm() = this / sqrt(sqrSize())
 
-    override fun toString(): String = "$x $y"
+    override fun toString(): String = "${asString(x)} ${asString(y)}"
+}
+
+val df = DecimalFormat().apply {
+    maximumFractionDigits = 3
+    minimumFractionDigits = 0
+    isGroupingUsed = false
+    decimalFormatSymbols = DecimalFormatSymbols(Locale.ENGLISH)
+}
+
+fun asString(d: Double): String {
+    return df.format(BigDecimal("$d"))
 }
 
 fun Solution.getContent(contentRepository: ContentRepository) =
