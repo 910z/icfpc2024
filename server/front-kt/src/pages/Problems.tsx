@@ -6,6 +6,10 @@ export function get(url: string) {
     return fetch(url).then((res) => res.json());
 }
 
+export function formatNum(num: string | number): string {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+
 export const Problems: React.FC = () => {
     const [problems, setProblems] = useState([] as Problem[]);
 
@@ -41,7 +45,7 @@ export const Problems: React.FC = () => {
                         ? <img src={`/preview/${bestSolution.id}?imgSize=200`} alt={`${id}`} width="200" height="200"/>
                         : <p>Nope</p>
                 }</td>
-                <td>{bestSolution?.score ?? 0}</td>
+                <td>{formatNum(bestSolution?.score ?? 0)}</td>
                 <td>{bestSolution?.tags ?? []}</td>
             </tr>
         ))}

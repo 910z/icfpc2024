@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Table} from "react-bootstrap";
 import {Solution} from "../types";
-import {get} from "./Problems";
+import {formatNum, get} from "./Problems";
 
 export const Solutions: React.FC = () => {
     const [solutions, setSolutions] = useState([] as Solution[]);
@@ -34,7 +34,7 @@ export const Solutions: React.FC = () => {
             <tr>
                 <td>{problemId}</td>
                 <td><img src={`/preview/${id}?imgSize=200`} alt={`${id}`} width="200" height="200"/></td>
-                <td>{score ?? 0}</td>
+                <td>{formatNum(score ?? 0)}</td>
                 <td>{tags ?? []}</td>
             </tr>
         ))}
