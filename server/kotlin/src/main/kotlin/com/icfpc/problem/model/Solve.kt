@@ -59,7 +59,11 @@ val df = DecimalFormat().apply {
 }
 
 fun asString(d: Double): String {
-    return df.format(BigDecimal("$d"))
+    return try {
+         df.format(BigDecimal("$d"))
+    } catch (e: Throwable) {
+        "$d"
+    }
 }
 
 fun Solution.getContent(contentRepository: ContentRepository) =
