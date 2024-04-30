@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Table} from "react-bootstrap";
 import {Solution} from "../types";
 import {get} from "./Problems";
@@ -6,16 +6,13 @@ import {get} from "./Problems";
 export const Solutions: React.FC = () => {
     const [solutions, setSolutions] = useState([] as Solution[]);
 
-    function upd() {
-        get(`/api/solutions`)
+    useEffect(() => {
+        fetch(`/api/solutions`)
+            .then((res) => res.json())
             .then(data => {
-                if (data !== solutions) {
                     setSolutions(data);
-                }
             });
-    }
-
-    setTimeout(upd, 5000);
+    }, []);
 
     return <Table striped bordered hover>
         <thead>
