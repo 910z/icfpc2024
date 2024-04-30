@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Table} from "react-bootstrap";
 import {Problem} from "../types";
 
@@ -9,17 +9,13 @@ export function get(url: string) {
 export const Problems: React.FC = () => {
     const [problems, setProblems] = useState([] as Problem[]);
 
-    function upd() {
-        console.log("upd")
-        get(`/api/problems`)
+    useEffect(() => {
+        fetch(`/api/problems`)
+            .then((res) => res.json())
             .then(data => {
-                if (data !== problems) {
-                    setProblems(data);
-                }
+                setProblems(data);
             });
-    }
-
-    setTimeout(upd, 5000);
+    }, []);
 
     return <Table striped bordered hover>
         <thead>

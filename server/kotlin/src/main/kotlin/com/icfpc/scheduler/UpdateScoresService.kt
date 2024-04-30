@@ -39,6 +39,9 @@ class UpdateScoresService(
     fun calc(): Boolean {
         val version = CalcScoringService.currentVersion
         val solutions = solutionRepository.notCalculated(version, 5)
+        if (solutions.isEmpty()) {
+            return false
+        }
         solutions.forEach { solution ->
             val begin = Date()
             val problem = problemRepository.getReferenceById(solution.problemId)
