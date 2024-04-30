@@ -32,6 +32,7 @@ export const Problems: React.FC = () => {
             {/*<th>Tastes</th>*/}
             {/*<th>Pillars</th>*/}
             {/*<th>Stage Size</th>*/}
+            <th>Tastes</th>
             <th>Score</th>
             <th>Version</th>
         </tr>
@@ -42,9 +43,10 @@ export const Problems: React.FC = () => {
                 <td>{id}</td>
                 <td>{
                     bestSolution != null
-                        ? <img src={`/preview/${bestSolution.id}?imgSize=200`} alt={`${id}`} width="200" height="200"/>
+                        ? <img src={`/preview/${bestSolution.id}`} alt={`${id}`} width="200" height="200"/>
                         : <p>Nope</p>
                 }</td>
+                <td><img src={`/tastes/${id}`} alt={`${id}`} width="200" height="200" /></td>
                 <td>{formatNum(bestSolution?.score ?? 0)}</td>
                 <td>{bestSolution?.tags ?? []}</td>
             </tr>
