@@ -18,10 +18,8 @@ class Solution(
     val problemId: Int,
     @Column
     val contentId: Int,
-//    @Column
-//    val tag: String,
     @Column
-    @ElementCollection
+    @JdbcTypeCode(SqlTypes.JSON)
     var tags: List<String> = listOf(),
     @Column
     var score: BigInteger? = null,
