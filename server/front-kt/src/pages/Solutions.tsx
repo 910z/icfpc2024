@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Table} from "react-bootstrap";
 import {Solution} from "../types";
-import {get} from "./Problems";
+import {formatNum, get} from "./Problems";
 
 export const Solutions: React.FC = () => {
     const [solutions, setSolutions] = useState([] as Solution[]);
@@ -25,6 +25,7 @@ export const Solutions: React.FC = () => {
             {/*<th>Tastes</th>*/}
             {/*<th>Pillars</th>*/}
             {/*<th>Stage Size</th>*/}
+            <th>Tastes</th>
             <th>Score</th>
             <th>Version</th>
         </tr>
@@ -33,8 +34,9 @@ export const Solutions: React.FC = () => {
         {solutions?.map(({id, problemId, score, tags}) => (
             <tr>
                 <td>{problemId}</td>
-                <td><img src={`/preview/${id}?imgSize=200`} alt={`${id}`}/></td>
-                <td>{score ?? 0}</td>
+                <td><img src={`/preview/${id}`} alt={`${id}`} width="200" height="200"/></td>
+                <td><img src={`/tastes/${problemId}`} alt={`${problemId}`} width="200" height="200" /></td>
+                <td>{formatNum(score ?? 0)}</td>
                 <td>{tags ?? []}</td>
             </tr>
         ))}
