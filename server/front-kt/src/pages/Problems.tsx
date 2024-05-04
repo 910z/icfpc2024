@@ -44,7 +44,7 @@ export const Problems: React.FC = () => {
                 <td>{
                     bestSolution != null
                         ? <img src={`/preview/${bestSolution.id}`} alt={`${id}`} width="200" height="200"/>
-                        : <p>Nope</p>
+                        : <img src="https://placehold.co/200x200?text=Placeholder" alt="Placeholder" width="200" height="200"/>
                 }</td>
                 <td><img src={`/tastes/${id}`} alt={`${id}`} width="200" height="200" /></td>
                 <td>{formatNum(bestSolution?.score ?? 0)}</td>
