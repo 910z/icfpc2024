@@ -15,6 +15,7 @@ export type Solution = {
 export type HistoryResponse = {
     history: History[]
     content: { [_: string]: Content }
+    tokens: Tokens
 }
 
 export type History = {

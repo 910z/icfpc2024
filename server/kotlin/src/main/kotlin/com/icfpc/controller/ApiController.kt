@@ -17,14 +17,20 @@ class ApiController(
     @GetMapping("history", produces= ["application/json"])
     fun history(): Any {
         val history = historyRepository.latest()
-        val content = history.flatMap {
-            listOf(it.request, it.response)
-        }
+        val content = history
+            .flatMap { listOf(it.request, it.response) }
             .distinct()
             .associateWith { contentRepository.getReferenceById(it) }
+        val tokens = content
+            .map { it.value.content }
+            .flatMap { it.split(" ") }
+            .filter { it.isNotEmpty() }
+            .associateWith { Util.parse(it) }
+            .filterValues { it != null }
         return mapOf(
             "history" to history,
-            "content" to content
+            "content" to content,
+            "tokens" to tokens
         )
     }
 
