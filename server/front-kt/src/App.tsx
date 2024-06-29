@@ -32,9 +32,7 @@ function Test() {
             </Tabs.List>
 
             <Tabs.Panel value="history">
-                <SimpleGrid cols={{sm: 1, md: 2}}>
                     <HistoryPage/>
-                </SimpleGrid>
             </Tabs.Panel>
 
             <Tabs.Panel value="settings">
