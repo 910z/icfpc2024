@@ -28,3 +28,5 @@ export type Content = {
     id: string
     content: string
 }
+
+export type Tokens = { [_: string]: string }
