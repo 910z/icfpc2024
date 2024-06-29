@@ -3,6 +3,8 @@ package com.icfpc.controller
 import com.icfpc.db.repository.ContentRepository
 import com.icfpc.utils.QueryUtils
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ResponseBody
 
 @Controller
 class MainController(
@@ -13,11 +15,11 @@ class MainController(
 //    @ResponseBody
 //    fun history() = queryUtils.history()
 
-//    @GetMapping("/")
-//    @ResponseBody
-//    fun index() = this::class.java
-//        .getResourceAsStream("/static/index.html")!!
-//        .readAllBytes()
+    @GetMapping("/")
+    @ResponseBody
+    fun index() = this::class.java
+        .getResourceAsStream("/static/index.html")!!
+        .readAllBytes()
 //
 //    @GetMapping("/init")
 //    fun init(): String {
