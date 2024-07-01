@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: icfpc
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: 'jdbc:postgresql://${DATABASE:localhost:5050}/icfpc'
+    username: 'icfpc'
+    password: 'icfpc'
+    hikari:
+      maximum-pool-size: 2
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
