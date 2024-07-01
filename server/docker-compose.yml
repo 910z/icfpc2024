@@ -11,6 +11,7 @@ services:
       - spring.datasource.url=${PG_DATABASE:-'jdbc:postgresql://postgres:5432/icfpc'}
       - spring.datasource.username=${PG_USERNAME:-icfpc}
       - spring.datasource.password=${PG_PASSWORD:-icfpc}
+      - TOKEN=${TOKEN:-}
 
   go:
     image: icfpc-go

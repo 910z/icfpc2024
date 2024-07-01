@@ -2,9 +2,6 @@ package com.icfpc.problem.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.icfpc.db.model.Solution
-import com.icfpc.db.repository.ContentRepository
-import com.icfpc.utils.Json
 import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -66,5 +63,5 @@ fun asString(d: Double): String {
     }
 }
 
-fun Solution.getContent(contentRepository: ContentRepository) =
-    contentRepository.getReferenceById(contentId).let { Json.parse<Solve>(it.content) }
+//fun Solution.getContent(contentRepository: ContentRepository) =
+//    contentRepository.getReferenceById(contentId).let { Json.parse<Solve>(it.content) }

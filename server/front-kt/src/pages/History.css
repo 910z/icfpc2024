@@ -1,0 +1,12 @@
+.break {
+    font-family: monospace;
+    /*word-break: break-all;*/
+    word-break: break-word;
+    margin: 0;
+}
+.over {
+    font-family: monospace;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
